@@ -7,7 +7,7 @@
     New search
   </a>
   <h1 class="section-title" style="margin-bottom: var(--space-2);">Recon: {{ rec.domain }}</h1>
-  <p style="color: var(--color-ink-secondary); font-size: var(--space-4);">Passive recon from public sources — WHOIS, DNS, TLS, crt.sh, robots.txt/sitemap.</p>
+  <p style="color: var(--ink-muted); font-size: var(--space-4);">Passive recon from public sources — WHOIS, DNS, TLS, crt.sh, robots.txt/sitemap.</p>
 </div>
 
 <div class="dashboard-grid" style="margin-bottom: var(--space-8);">
@@ -15,13 +15,13 @@
     <div class="analysis-card-title">Security Headers</div>
     <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4);">
       <span style="display: inline-flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border-radius: 50%; font-weight: 700; font-size: 1rem; color: #fff; background: {% if rec.data.security_headers.grade == 'A' %}#22C55E{% elif rec.data.security_headers.grade == 'B' %}#84CC16{% elif rec.data.security_headers.grade == 'C' %}#F59E0B{% else %}#EF4444{% endif %};">{{ rec.data.security_headers.grade }}</span>
-      <span style="font-size: var(--space-3); color: var(--color-ink-secondary);">{{ rec.data.security_headers.found }}/{{ rec.data.security_headers.total }} present</span>
+      <span style="font-size: var(--space-3); color: var(--ink-muted);">{{ rec.data.security_headers.found }}/{{ rec.data.security_headers.total }} present</span>
     </div>
     <div style="display: flex; flex-direction: column; gap: var(--space-2);">
       {% for header, value in rec.data.security_headers.headers.items() %}
       <div style="display: flex; align-items: center; gap: var(--space-2); font-size: var(--space-3);">
         <span style="color: {% if value %}#22C55E{% else %}#EF4444{% endif %}; font-weight: 600;">{{ "✓" if value else "✗" }}</span>
-        <span style="color: var(--color-ink-secondary);">{{ header }}</span>
+        <span style="color: var(--ink-muted);">{{ header }}</span>
       </div>
       {% endfor %}
     </div>
@@ -33,13 +33,13 @@
     <div style="display: flex; flex-direction: column; gap: var(--space-3);">
       {% for record_type, values in rec.data.dns.records.items() %}
       <div>
-        <div style="font-size: var(--space-2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-ink-muted); margin-bottom: var(--space-1);">{{ record_type }}</div>
+        <div style="font-size: var(--space-2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-muted); margin-bottom: var(--space-1);">{{ record_type }}</div>
         <div style="font-size: var(--space-3); font-family: var(--font-mono); color: var(--color-ink); word-break: break-all;">{{ values | join(', ') }}</div>
       </div>
       {% endfor %}
     </div>
     {% else %}
-    <p style="color: var(--color-ink-secondary); font-size: var(--space-3);">No DNS records found.</p>
+    <p style="color: var(--ink-muted); font-size: var(--space-3);">No DNS records found.</p>
     {% endif %}
   </div>
 </div>
@@ -50,20 +50,20 @@
     {% if rec.data.ssl.available %}
     <div style="display: flex; flex-direction: column; gap: var(--space-3);">
       <div>
-        <div style="font-size: var(--space-2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-ink-muted); margin-bottom: var(--space-1);">Subject</div>
+        <div style="font-size: var(--space-2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-muted); margin-bottom: var(--space-1);">Subject</div>
         <div style="font-size: var(--space-3);">{{ rec.data.ssl.subject }}</div>
       </div>
       <div>
-        <div style="font-size: var(--space-2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-ink-muted); margin-bottom: var(--space-1);">Issuer</div>
+        <div style="font-size: var(--space-2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-muted); margin-bottom: var(--space-1);">Issuer</div>
         <div style="font-size: var(--space-3);">{{ rec.data.ssl.issuer }}</div>
       </div>
       <div>
-        <div style="font-size: var(--space-2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-ink-muted); margin-bottom: var(--space-1);">Valid</div>
+        <div style="font-size: var(--space-2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-muted); margin-bottom: var(--space-1);">Valid</div>
         <div style="font-size: var(--space-3);">{{ rec.data.ssl.not_before }} — {{ rec.data.ssl.not_after }}</div>
       </div>
     </div>
     {% else %}
-    <p style="color: var(--color-ink-secondary); font-size: var(--space-3);">Could not retrieve TLS certificate.</p>
+    <p style="color: var(--ink-muted); font-size: var(--space-3);">Could not retrieve TLS certificate.</p>
     {% endif %}
   </div>
 
@@ -72,11 +72,11 @@
     {% if rec.data.subdomains %}
     <div style="display: flex; flex-wrap: wrap; gap: var(--space-2);">
       {% for sub in rec.data.subdomains[:20] %}
-      <span style="font-size: var(--space-3); font-family: var(--font-mono); padding: var(--space-1) var(--space-3); background: var(--color-bg); border-radius: var(--radius-sm);">{{ sub }}</span>
+      <span style="font-size: var(--space-3); font-family: var(--font-mono); padding: var(--space-1) var(--space-3); background: var(--bg); border-radius: var(--radius-sm);">{{ sub }}</span>
       {% endfor %}
     </div>
     {% else %}
-    <p style="color: var(--color-ink-secondary); font-size: var(--space-3);">No subdomains discovered.</p>
+    <p style="color: var(--ink-muted); font-size: var(--space-3);">No subdomains discovered.</p>
     {% endif %}
   </div>
 </div>
@@ -88,20 +88,20 @@
     <div style="display: flex; flex-direction: column; gap: var(--space-2);">
       {% for key, value in rec.data.whois.fields.items() %}
       <div style="display: flex; justify-content: space-between; font-size: var(--space-3);">
-        <span style="color: var(--color-ink-muted);">{{ key.replace('_', ' ') }}</span>
+        <span style="color: var(--ink-muted);">{{ key.replace('_', ' ') }}</span>
         <span style="font-weight: 500; text-align: right; max-width: 60%;">{{ value | join(', ') if value is sequence and value is not string else value }}</span>
       </div>
       {% endfor %}
     </div>
     {% elif rec.data.whois.available %}
-    <p style="color: var(--color-ink-secondary); font-size: var(--space-3);">No structured fields parsed.</p>
+    <p style="color: var(--ink-muted); font-size: var(--space-3);">No structured fields parsed.</p>
     {% else %}
-    <p style="color: var(--color-ink-secondary); font-size: var(--space-3);">whois binary not found on this system.</p>
+    <p style="color: var(--ink-muted); font-size: var(--space-3);">whois binary not found on this system.</p>
     {% endif %}
     {% if rec.data.whois.raw %}
     <details style="margin-top: var(--space-4);">
-      <summary style="font-size: var(--space-3); font-weight: 500; cursor: pointer; color: var(--color-ink-secondary);">Raw WHOIS output</summary>
-      <pre style="background: var(--color-bg); padding: var(--space-4); border-radius: var(--radius); font-size: var(--space-2); overflow-x: auto; white-space: pre-wrap; margin-top: var(--space-3);">{{ rec.data.whois.raw }}</pre>
+      <summary style="font-size: var(--space-3); font-weight: 500; cursor: pointer; color: var(--ink-muted);">Raw WHOIS output</summary>
+      <pre style="background: var(--bg); padding: var(--space-4); border-radius: var(--radius); font-size: var(--space-2); overflow-x: auto; white-space: pre-wrap; margin-top: var(--space-3);">{{ rec.data.whois.raw }}</pre>
     </details>
     {% endif %}
   </div>
@@ -115,7 +115,7 @@
       {% endfor %}
     </div>
     {% else %}
-    <p style="color: var(--color-ink-secondary); font-size: var(--space-3);">No technology fingerprints detected.</p>
+    <p style="color: var(--ink-muted); font-size: var(--space-3);">No technology fingerprints detected.</p>
     {% endif %}
   </div>
 </div>

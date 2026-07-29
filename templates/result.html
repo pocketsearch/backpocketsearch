@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function(){
   <div class="analysis-card-title">Headings</div>
   <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--space-2);">
     {% for h in r.headings %}
-    <li style="font-size: var(--space-3); padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border);">{{ h }}</li>
+    <li style="font-size: var(--space-3); padding: var(--space-2) 0; border-bottom: 1px solid var(--border);">{{ h }}</li>
     {% endfor %}
   </ul>
 </div>
@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', function(){
     <div class="analysis-card-title">Links ({{ r.link_count }})</div>
     <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--space-2); max-height: 400px; overflow-y: auto;">
       {% for l in r.links %}
-      <li><a href="{{ l }}" target="_blank" rel="noopener" style="font-size: var(--space-3); color: var(--color-ink-secondary); word-break: break-all; text-decoration: none;">{{ l }}</a></li>
+      <li><a href="{{ l }}" target="_blank" rel="noopener" style="font-size: var(--space-3); color: var(--ink-muted); word-break: break-all; text-decoration: none;">{{ l }}</a></li>
       {% endfor %}
     </ul>
   </div>
@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function(){
     <div class="analysis-card-title">Images ({{ r.image_count }})</div>
     <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--space-2); max-height: 400px; overflow-y: auto;">
       {% for i in r.images %}
-      <li><a href="{{ i }}" target="_blank" rel="noopener" style="font-size: var(--space-3); color: var(--color-ink-secondary); word-break: break-all; text-decoration: none;">{{ i }}</a></li>
+      <li><a href="{{ i }}" target="_blank" rel="noopener" style="font-size: var(--space-3); color: var(--ink-muted); word-break: break-all; text-decoration: none;">{{ i }}</a></li>
       {% endfor %}
     </ul>
   </div>

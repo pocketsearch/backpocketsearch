@@ -8,23 +8,23 @@
   </a>
   <h1 style="font-size: clamp(1.5rem, 4vw, 2.5rem); font-weight: 700; letter-spacing: -0.02em; margin-bottom: var(--space-3);">{{ s.query }}</h1>
   <div style="display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap;">
-    <span style="color: var(--color-ink-secondary); font-size: var(--space-3);">{{ s.result_count }} results in {{ s.response_ms }} ms</span>
-    <span style="color: var(--color-ink-muted);">·</span>
-    <a href="{{ url_for('export_search', search_id=s.id, fmt='json') }}" style="color: var(--color-primary); text-decoration: none; font-size: var(--space-3); font-weight: 500;">Export JSON</a>
-    <span style="color: var(--color-ink-muted);">·</span>
-    <a href="{{ url_for('export_search', search_id=s.id, fmt='csv') }}" style="color: var(--color-primary); text-decoration: none; font-size: var(--space-3); font-weight: 500;">Export CSV</a>
+    <span style="color: var(--ink-muted); font-size: var(--space-3);">{{ s.result_count }} results in {{ s.response_ms }} ms</span>
+    <span style="color: var(--ink-muted);">·</span>
+    <a href="{{ url_for('export_search', search_id=s.id, fmt='json') }}" style="color: var(--accent); text-decoration: none; font-size: var(--space-3); font-weight: 500;">Export JSON</a>
+    <span style="color: var(--ink-muted);">·</span>
+    <a href="{{ url_for('export_search', search_id=s.id, fmt='csv') }}" style="color: var(--accent); text-decoration: none; font-size: var(--space-3); font-weight: 500;">Export CSV</a>
   </div>
 </div>
 
 {% if s.analysis %}
 <div class="analysis-grid">
   {% if s.analysis.contradictions %}
-  <div class="analysis-card" style="border-left: 3px solid #F59E0B;">
+  <div class="analysis-card" style="border-left: 3px solid var(--border-strong);">
     <div class="analysis-card-title">Contradictions</div>
     <div class="analysis-card-content">
       {% for c in s.analysis.contradictions %}
-      <div style="padding: var(--space-3) 0; border-bottom: 1px solid var(--color-border);">
-        <div style="font-size: var(--space-2); font-weight: 600; color: var(--color-ink-secondary); margin-bottom: var(--space-1);">{{ c.source_a }}</div>
+      <div style="padding: var(--space-3) 0; border-bottom: 1px solid var(--border);">
+        <div style="font-size: var(--space-2); font-weight: 600; color: var(--ink-muted); margin-bottom: var(--space-1);">{{ c.source_a }}</div>
         <div style="font-size: var(--space-3); line-height: 1.5;">{{ c.snippet_a[:100] }}...</div>
       </div>
       {% endfor %}
@@ -33,22 +33,22 @@
   {% endif %}
 
   {% if s.analysis.consensus %}
-  <div class="analysis-card" style="border-left: 3px solid #22C55E;">
+  <div class="analysis-card" style="border-left: 3px solid var(--border-strong);">
     <div class="analysis-card-title">Consensus</div>
     <div class="analysis-card-content">
       <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3);">
-        <div style="flex: 1; height: 8px; background: var(--color-border); border-radius: 4px; overflow: hidden;">
+        <div style="flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden;">
           <div style="width: {{ s.analysis.consensus.agreement_pct }}%; height: 100%; background: #22C55E; border-radius: 4px; transition: width var(--duration) var(--ease);"></div>
         </div>
-        <span style="font-size: var(--space-3); font-weight: 700; color: var(--color-ink-secondary);">{{ s.analysis.consensus.agreement_pct }}%</span>
+        <span style="font-size: var(--space-3); font-weight: 700; color: var(--ink-muted);">{{ s.analysis.consensus.agreement_pct }}%</span>
       </div>
-      <p style="font-size: var(--space-2); color: var(--color-ink-muted);">{{ s.analysis.consensus.total_sources }} sources analyzed</p>
+      <p style="font-size: var(--space-2); color: var(--ink-muted);">{{ s.analysis.consensus.total_sources }} sources analyzed</p>
     </div>
   </div>
   {% endif %}
 
   {% if s.analysis.bias %}
-  <div class="analysis-card" style="border-left: 3px solid #8B5CF6;">
+  <div class="analysis-card" style="border-left: 3px solid var(--border-strong);">
     <div class="analysis-card-title">Source Trust</div>
     <div class="analysis-card-content">
       <div style="display: flex; flex-direction: column; gap: var(--space-2);">
@@ -57,7 +57,7 @@
           <span style="font-size: var(--space-3); font-weight: 500;">{{ b.source }}</span>
           <div style="display: flex; gap: var(--space-1);">
             {% for sig in b.signals[:2] %}
-            <span style="font-size: var(--space-2); padding: 2px var(--space-2); border-radius: 999px; background: var(--color-bg); color: var(--color-ink-muted);">{{ sig }}</span>
+            <span style="font-size: var(--space-2); padding: 2px var(--space-2); border-radius: var(--radius); background: var(--bg); color: var(--ink-muted);">{{ sig }}</span>
             {% endfor %}
           </div>
         </div>
@@ -68,12 +68,12 @@
   {% endif %}
 
   {% if s.analysis.overlooked %}
-  <div class="analysis-card" style="border-left: 3px solid #3B82F6;">
+  <div class="analysis-card" style="border-left: 3px solid var(--border-strong);">
     <div class="analysis-card-title">Key Insights</div>
     <div class="analysis-card-content">
       <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--space-2);">
         {% for fact in s.analysis.overlooked[:3] %}
-        <li style="font-size: var(--space-3); line-height: 1.5; padding-left: var(--space-3); border-left: 2px solid var(--color-border);">{{ fact.fact[:120] }}...</li>
+        <li style="font-size: var(--space-3); line-height: 1.5; padding-left: var(--space-3); border-left: 2px solid var(--border);">{{ fact.fact[:120] }}...</li>
         {% endfor %}
       </ul>
     </div>
@@ -90,7 +90,7 @@
     {% for attr in s.analysis.answer_card.attributes %}
     <div class="card" style="text-align: center; padding: var(--space-4);">
       <div style="font-size: 1.5rem; margin-bottom: var(--space-2);">{{ attr.icon }}</div>
-      <div style="font-size: var(--space-2); color: var(--color-ink-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: var(--space-1);">{{ attr.label }}</div>
+      <div style="font-size: var(--space-2); color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: var(--space-1);">{{ attr.label }}</div>
       <div style="font-size: var(--space-4); font-weight: 700;">{{ attr.value }}</div>
     </div>
     {% endfor %}
@@ -110,54 +110,54 @@
 
 {% if s.analysis.step_by_steps %}
 {% set howto = s.analysis.how_to_summary %}
-<div class="analysis-card" style="margin-bottom: var(--space-8); border-left: 3px solid #10B981;">
+<div class="analysis-card" style="margin-bottom: var(--space-8); border-left: 3px solid var(--border-strong);">
   <div class="analysis-card-title">Step-by-Step Guide</div>
   {% if howto %}
-  <div style="padding: var(--space-3) 0; border-bottom: 1px solid var(--color-border); margin-bottom: var(--space-4);">
-    <p style="font-size: var(--space-3); color: var(--color-ink-secondary); margin: 0 0 var(--space-3) 0;">{{ howto.summary }}</p>
+  <div style="padding: var(--space-3) 0; border-bottom: 1px solid var(--border); margin-bottom: var(--space-4);">
+    <p style="font-size: var(--space-3); color: var(--ink-muted); margin: 0 0 var(--space-3) 0;">{{ howto.summary }}</p>
     {% if howto.prerequisites %}
     <div style="margin-bottom: var(--space-3);">
-      <span style="font-size: var(--space-2); font-weight: 600; color: var(--color-ink-muted); text-transform: uppercase; letter-spacing: 0.05em;">Prerequisites</span>
+      <span style="font-size: var(--space-2); font-weight: 600; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.05em;">Prerequisites</span>
       <ul style="margin: var(--space-2) 0 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--space-1);">
         {% for prereq in howto.prerequisites %}
-        <li style="font-size: var(--space-3); color: var(--color-ink-secondary); padding-left: var(--space-4); position: relative;">
-          <span style="position: absolute; left: 0; color: var(--color-primary);">▸</span>{{ prereq }}
+        <li style="font-size: var(--space-3); color: var(--ink-muted); padding-left: var(--space-4); position: relative;">
+          <span style="position: absolute; left: 0; color: var(--accent);">▸</span>{{ prereq }}
         </li>
         {% endfor %}
       </ul>
     </div>
     {% endif %}
     <div style="display: flex; gap: var(--space-4); flex-wrap: wrap;">
-      <span style="font-size: var(--space-2); padding: 2px var(--space-2); border-radius: 999px; background: var(--color-bg); color: var(--color-ink-muted);">{{ howto.total_steps }} steps</span>
-      <span style="font-size: var(--space-2); padding: 2px var(--space-2); border-radius: 999px; background: var(--color-bg); color: var(--color-ink-muted);">{{ howto.total_estimated_minutes }} min est.</span>
-      <span style="font-size: var(--space-2); padding: 2px var(--space-2); border-radius: 999px; background: var(--color-bg); color: var(--color-ink-muted);">{{ howto.difficulty }}</span>
+      <span style="font-size: var(--space-2); padding: 2px var(--space-2); border-radius: var(--radius); background: var(--bg); color: var(--ink-muted);">{{ howto.total_steps }} steps</span>
+      <span style="font-size: var(--space-2); padding: 2px var(--space-2); border-radius: var(--radius); background: var(--bg); color: var(--ink-muted);">{{ howto.total_estimated_minutes }} min est.</span>
+      <span style="font-size: var(--space-2); padding: 2px var(--space-2); border-radius: var(--radius); background: var(--bg); color: var(--ink-muted);">{{ howto.difficulty }}</span>
     </div>
   </div>
   {% endif %}
   <div style="display: flex; flex-direction: column; gap: var(--space-4);">
     {% for step in s.analysis.step_by_steps %}
-    <div style="border: 1px solid var(--color-border); border-radius: var(--radius); padding: var(--space-4); background: var(--color-bg);">
+    <div style="border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-4); background: var(--bg);">
       <div style="display: flex; align-items: flex-start; gap: var(--space-3);">
-        <div style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-size: var(--space-3); font-weight: 700;">{{ step.step_number }}</div>
+        <div style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-size: var(--space-3); font-weight: 700;">{{ step.step_number }}</div>
         <div style="flex: 1; min-width: 0;">
           <div style="font-size: var(--space-3); font-weight: 600; margin-bottom: var(--space-1);">{{ step.step_title }}</div>
-          <p style="font-size: var(--space-3); color: var(--color-ink-secondary); line-height: 1.6; margin: 0 0 var(--space-3) 0;">{{ step.step_description }}</p>
+          <p style="font-size: var(--space-3); color: var(--ink-muted); line-height: 1.6; margin: 0 0 var(--space-3) 0;">{{ step.step_description }}</p>
           <div style="display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: center;">
             {% if step.step_verb %}
-            <span style="font-size: var(--space-2); padding: 2px var(--space-2); border-radius: 999px; background: var(--color-primary); color: white; text-transform: uppercase; letter-spacing: 0.03em;">{{ step.step_verb }}</span>
+            <span style="font-size: var(--space-2); padding: 2px var(--space-2); border-radius: var(--radius); background: var(--accent); color: white; text-transform: uppercase; letter-spacing: 0.03em;">{{ step.step_verb }}</span>
             {% endif %}
-            <span style="font-size: var(--space-2); color: var(--color-ink-muted);">⏱ ~{{ step.estimated_minutes }} min</span>
+            <span style="font-size: var(--space-2); color: var(--ink-muted);">⏱ ~{{ step.estimated_minutes }} min</span>
             {% if step.difficulty %}
-            <span style="font-size: var(--space-2); padding: 2px var(--space-2); border-radius: 999px; background: var(--color-bg); color: var(--color-ink-muted);">{{ step.difficulty }}</span>
+            <span style="font-size: var(--space-2); padding: 2px var(--space-2); border-radius: var(--radius); background: var(--bg); color: var(--ink-muted);">{{ step.difficulty }}</span>
             {% endif %}
             {% if step.url %}
-            <a href="{{ step.url }}" target="_blank" rel="noopener" style="font-size: var(--space-2); color: var(--color-primary); text-decoration: none;">Source →</a>
+            <a href="{{ step.url }}" target="_blank" rel="noopener" style="font-size: var(--space-2); color: var(--accent); text-decoration: none;">Source →</a>
             {% endif %}
           </div>
           {% if step.tips %}
-          <div style="margin-top: var(--space-2); padding: var(--space-2) var(--space-3); border-radius: var(--radius); background: var(--color-surface); border-left: 2px solid var(--color-primary);">
-            <span style="font-size: var(--space-2); color: var(--color-ink-muted); font-weight: 600;">💡 Tip:</span>
-            <span style="font-size: var(--space-3); color: var(--color-ink-secondary);">{{ step.tips[0] }}</span>
+          <div style="margin-top: var(--space-2); padding: var(--space-2) var(--space-3); border-radius: var(--radius); background: var(--surface); border-left: 2px solid var(--accent);">
+            <span style="font-size: var(--space-2); color: var(--ink-muted); font-weight: 600;">💡 Tip:</span>
+            <span style="font-size: var(--space-3); color: var(--ink-muted);">{{ step.tips[0] }}</span>
           </div>
           {% endif %}
         </div>
@@ -171,8 +171,8 @@
 {% if s.group_order %}
   {% for src in s.group_order %}
   <div style="margin-bottom: var(--space-10);">
-    <h2 class="section-title" style="font-size: var(--space-4); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-ink-muted); margin-bottom: var(--space-4);">
-      {{ src }} <span style="font-weight: 400; color: var(--color-ink-muted);">({{ s.grouped[src] | length }})</span>
+    <h2 class="section-title" style="font-size: var(--space-4); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-muted); margin-bottom: var(--space-4);">
+      {{ src }} <span style="font-weight: 400; color: var(--ink-muted);">({{ s.grouped[src] | length }})</span>
     </h2>
     <div class="results-container">
       {% for item in s.grouped[src] %}

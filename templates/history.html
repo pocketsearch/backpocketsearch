@@ -25,20 +25,20 @@
       {% for row in rows %}
       <tr>
         <td>
-          <span style="font-size: var(--space-2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; padding: 2px var(--space-2); border-radius: 999px; background: var(--color-bg); color: var(--color-ink-secondary);">
+          <span style="font-size: var(--space-2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; padding: 2px var(--space-2); border-radius: var(--radius); background: var(--bg); color: var(--ink-muted);">
             {{ {"page": "Page", "search": "Search", "recon": "Recon"}[row.kind] }}
           </span>
         </td>
         <td class="truncate" style="max-width: 300px;">{{ row.label }}</td>
-        <td style="color: var(--color-ink-secondary); font-size: var(--space-3);">{{ row.meta }}</td>
-        <td style="color: var(--color-ink-muted); font-size: var(--space-2); white-space: nowrap;">{{ row.created_at[:16] }}</td>
+        <td style="color: var(--ink-muted); font-size: var(--space-3);">{{ row.meta }}</td>
+        <td style="color: var(--ink-muted); font-size: var(--space-2); white-space: nowrap;">{{ row.created_at[:16] }}</td>
         <td>
           {% if row.kind == "page" %}
-            <a href="{{ url_for('result', scrape_id=row.id) }}" style="font-weight: 500; color: var(--color-primary); text-decoration: none;">View</a>
+            <a href="{{ url_for('result', scrape_id=row.id) }}" style="font-weight: 500; color: var(--accent); text-decoration: none;">View</a>
           {% elif row.kind == "search" %}
-            <a href="{{ url_for('search_result', search_id=row.id) }}" style="font-weight: 500; color: var(--color-primary); text-decoration: none;">View</a>
+            <a href="{{ url_for('search_result', search_id=row.id) }}" style="font-weight: 500; color: var(--accent); text-decoration: none;">View</a>
           {% else %}
-            <a href="{{ url_for('recon_result', recon_id=row.id) }}" style="font-weight: 500; color: var(--color-primary); text-decoration: none;">View</a>
+            <a href="{{ url_for('recon_result', recon_id=row.id) }}" style="font-weight: 500; color: var(--accent); text-decoration: none;">View</a>
           {% endif %}
         </td>
       </tr>
@@ -49,7 +49,7 @@
 {% else %}
 <div class="card" style="text-align: center; padding: var(--space-16);">
   <div class="logo-splash" aria-hidden="true">{% include '_logo.html' %}</div>
-  <p style="color: var(--color-ink-secondary); font-size: var(--space-4);">No activity yet.</p>
+  <p style="color: var(--ink-muted); font-size: var(--space-4);">No activity yet.</p>
 </div>
 {% endif %}
 {% endblock %}

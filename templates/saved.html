@@ -7,7 +7,7 @@
     New search
   </a>
   <h1 class="section-title" style="margin-bottom: var(--space-2);">Your Knowledge Base</h1>
-  <p style="color: var(--color-ink-secondary); font-size: var(--space-4);">{{ items|length }} saved items</p>
+  <p style="color: var(--ink-muted); font-size: var(--space-4);">{{ items|length }} saved items</p>
 </div>
 
 {% if items %}
@@ -35,7 +35,7 @@
 {% else %}
 <div class="card" style="text-align: center; padding: var(--space-16);">
   <div class="logo-splash" aria-hidden="true">{% include '_logo.html' %}</div>
-  <p style="color: var(--color-ink-secondary); font-size: var(--space-4);">No saved items yet. Save facts, articles, and insights as you search.</p>
+  <p style="color: var(--ink-muted); font-size: var(--space-4);">No saved items yet. Save facts, articles, and insights as you search.</p>
 </div>
 {% endif %}
 {% endblock %}
