@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', function(){
     // insert small spinning logo
     var spinner = document.createElement('span');
     spinner.className = 'btn-spinner';
-    spinner.innerHTML = `{% include '_logo.html' %}`;
+    spinner.innerHTML = `{% from '_logo_macro.html' import logo %}{{ logo(36, 'brand-logo') }}`;
     btn.prepend(spinner);
     // add spin class
     spinner.querySelector('.rotate-ring')?.classList.add('active-spin');

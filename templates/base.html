@@ -25,7 +25,7 @@
   <header class="navbar">
     <div class="navbar-inner">
       <a class="navbar-brand" href="{{ url_for('index') }}">
-        <span class="brand-logo" aria-hidden="true">{% include '_logo.html' %}</span>
+        <span class="brand-logo" aria-hidden="true">{% from '_logo_macro.html' import logo %}{{ logo(36, 'brand-logo') }}</span>
         <span class="brand-name">KitPocket</span>
       </a>
 
@@ -160,7 +160,7 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <div class="footer-brand-name"><span class="brand-logo footer-logo" aria-hidden="true">{% include '_logo.html' %}</span> <span class="brand-name">KitPocket</span></div>
+          <div class="footer-brand-name"><span class="brand-logo footer-logo" aria-hidden="true">{% from '_logo_macro.html' import logo %}{{ logo(36, 'brand-logo') }}</span> <span class="brand-name">KitPocket</span></div>
           <p class="footer-brand-desc">Open Source intelligence. Self-hosted, no accounts, no tracking.</p>
         </div>
         <div>

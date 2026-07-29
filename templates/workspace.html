@@ -14,7 +14,7 @@
 <div class="workspace-grid">
   {% for it in items %}
   <a href="{{ it.item.url if it.item.url else url_for('index') }}" class="workspace-tile" title="{{ it.item.title or it.query }}">
-    <div class="tile-icon" aria-hidden="true">{% include '_logo.html' %}</div>
+    <div class="tile-icon" aria-hidden="true">{% from '_logo_macro.html' import logo %}{{ logo(36, 'brand-logo') }}</div>
     <div class="tile-body">
       <div class="tile-title">{{ it.item.title or it.query }}</div>
       <div class="tile-sub">{{ it.item.source or it.query }}</div>
@@ -25,7 +25,7 @@
 </div>
 {% else %}
 <div class="card" style="text-align: center; padding: var(--space-12);">
-  <div class="logo-splash" aria-hidden="true">{% include '_logo.html' %}</div>
+  <div class="logo-splash" aria-hidden="true">{% from '_logo_macro.html' import logo %}{{ logo(36, 'brand-logo') }}</div>
   <h2 style="margin-top: var(--space-4);">No collections yet</h2>
   <p style="color: var(--ink-muted); margin-top: var(--space-3);">Save pages and searches to create a workspace of useful references.</p>
 </div>

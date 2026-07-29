@@ -9,7 +9,7 @@
   <svg class="corner-bracket bottom-right" width="24" height="24" aria-hidden="true"><path d="M20 12 L20 20 L12 20" stroke="var(--border)" stroke-width="1" fill="none" stroke-linecap="square" transform="translate(0,0)"/></svg>
 
   <div class="hero-badge" aria-hidden="true">
-    <div class="logo-splash" aria-hidden="true">{% include '_logo.html' %}</div>
+    <div class="logo-splash" aria-hidden="true">{% from '_logo_macro.html' import logo %}{{ logo(36, 'brand-logo') }}</div>
   </div>
   <h1 class="hero-title">Scrape. Search.<br>Discover.</h1>
   <p class="hero-subtitle">Paste a URL to pull it live, or type a plain query to search across the web and open knowledge sources.</p>

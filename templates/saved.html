@@ -34,7 +34,7 @@
 </div>
 {% else %}
 <div class="card" style="text-align: center; padding: var(--space-16);">
-  <div class="logo-splash" aria-hidden="true">{% include '_logo.html' %}</div>
+  <div class="logo-splash" aria-hidden="true">{% from '_logo_macro.html' import logo %}{{ logo(36, 'brand-logo') }}</div>
   <p style="color: var(--ink-muted); font-size: var(--space-4);">No saved items yet. Save facts, articles, and insights as you search.</p>
 </div>
 {% endif %}
