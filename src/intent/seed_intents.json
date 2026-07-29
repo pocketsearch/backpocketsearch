@@ -1,0 +1,50 @@
+{
+  "programming": {
+    "examples": ["code generation", "python requests", "write python code", "generate a script"],
+    "keywords": ["code","generate","python","script","requests","programming","coding","llm","api","implementation"],
+    "tags": ["programming","code","python","ai"],
+    "aliases": ["coding","software","development","implementation"]
+  },
+  "osint": {
+    "examples": ["reverse image", "domain lookup", "whois lookup"],
+    "keywords": ["recon","osint","reverse","whois","lookup","image","ip","domain","enumeration"],
+    "tags": ["osint","recon","investigation"],
+    "aliases": ["recon","investigation","intel"]
+  },
+  "networking": {
+    "examples": ["dns lookup", "traceroute", "tcp port scan"],
+    "keywords": ["dns","lookup","tcp","udp","port","network","routing","traceroute","ip"],
+    "tags": ["networking","dns","ip"],
+    "aliases": ["net","network","connectivity"]
+  },
+  "security": {
+    "examples": ["sql injection", "xss", "vulnerability analysis"],
+    "keywords": ["sql","injection","xss","exploit","vulnerability","security","cve","pentest"],
+    "tags": ["security","vulnerability","pentest"],
+    "aliases": ["sec","infosec","pentest"]
+  },
+  "ai": {
+    "examples": ["ai hallucinations", "llm behavior", "model alignment"],
+    "keywords": ["ai","llm","hallucination","model","alignment","prompt","generation"],
+    "tags": ["ai","llm","ml"],
+    "aliases": ["artificial intelligence","machine learning","ml"]
+  },
+  "reasoning": {
+    "examples": ["contradictions", "logical inconsistency", "deduction error"],
+    "keywords": ["contradiction","reasoning","logic","inconsistency","argument","proof"],
+    "tags": ["reasoning","logic","cognition"],
+    "aliases": ["logic","deduction"]
+  },
+  "uiux": {
+    "examples": ["login page design", "button placement", "ui layout"],
+    "keywords": ["ui","ux","design","layout","button","form","login","usability"],
+    "tags": ["ui","ux","design"],
+    "aliases": ["user interface","user experience"]
+  },
+  "reverse_engineering": {
+    "examples": ["malware analysis", "binary unpacking"],
+    "keywords": ["malware","reverse","unpack","decompile","binary","analysis"],
+    "tags": ["reverse-engineering","malware"],
+    "aliases": ["re","malware-analysis"]
+  }
+}
