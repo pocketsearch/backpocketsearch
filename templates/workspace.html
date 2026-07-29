@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Workspace — KitPocket{% endblock %}
+{% block content %}
+<div style="margin-bottom: var(--space-8);">
+  <a href="{{ url_for('index') }}" class="back-link">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+    New search
+  </a>
+  <h1 class="section-title" style="margin-bottom: var(--space-4);">Workspace</h1>
+  <p style="color: var(--color-ink-secondary);">Collections and saved items displayed as tiles for quick access.</p>
+</div>
+
+{% if items %}
+<div class="workspace-grid">
+  {% for it in items %}
+  <a href="{{ it.item.url if it.item.url else url_for('index') }}" class="workspace-tile" title="{{ it.item.title or it.query }}">
+    <div class="tile-icon" aria-hidden="true">{% include '_logo.html' %}</div>
+    <div class="tile-body">
+      <div class="tile-title">{{ it.item.title or it.query }}</div>
+      <div class="tile-sub">{{ it.item.source or it.query }}</div>
+    </div>
+    <div class="tile-meta">{{ it.created_at[:10] }}</div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: var(--space-12);">
+  <div class="logo-splash" aria-hidden="true">{% include '_logo.html' %}</div>
+  <h2 style="margin-top: var(--space-4);">No collections yet</h2>
+  <p style="color: var(--color-ink-secondary); margin-top: var(--space-3);">Save pages and searches to create a workspace of useful references.</p>
+</div>
+{% endif %}
+{% endblock %}

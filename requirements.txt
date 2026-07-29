@@ -1,0 +1,6 @@
+flask
+requests
+beautifulsoup4
+dnspython
+python-dotenv
+tenacity

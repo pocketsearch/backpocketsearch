@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}About{% endblock %}
+{% block content %}
+<div style="max-width: 640px; margin-top: var(--space-12);">
+  <h1 class="section-title" style="margin-bottom: var(--space-6);">About KitPocket</h1>
+  <div style="display: flex; flex-direction: column; gap: var(--space-4);">
+    <p style="color: var(--color-ink-secondary); line-height: 1.7; font-size: var(--space-4);">KitPocket takes anything you type. If it looks like a URL, it fetches that page live and pulls out its title, meta description, headings, links, and images. If it doesn't look like a URL, it runs a real web search and shows the actual results — no mock data, no filler.</p>
+    <p style="color: var(--color-ink-secondary); line-height: 1.7; font-size: var(--space-4);">Built with Flask, requests, and BeautifulSoup. Searches use DuckDuckGo's HTML endpoint directly, no API key required. Self-hosted, no accounts, no tracking.</p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Saved{% endblock %}
+{% block content %}
+<div style="margin-bottom: var(--space-8);">
+  <a href="{{ url_for('index') }}" class="back-link">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+    New search
+  </a>
+  <h1 class="section-title" style="margin-bottom: var(--space-2);">Your Knowledge Base</h1>
+  <p style="color: var(--color-ink-secondary); font-size: var(--space-4);">{{ items|length }} saved items</p>
+</div>
+
+{% if items %}
+<div class="saved-grid">
+  {% for item in items %}
+  <article class="saved-card">
+    <div class="saved-card-header">
+      <span class="saved-card-source">{{ item.item.source }}</span>
+      <span class="saved-card-date">{{ item.created_at[:10] }}</span>
+    </div>
+    <h3><a href="{{ item.item.url }}" target="_blank" rel="noopener" class="saved-card-title">{{ item.item.title }}</a></h3>
+    <p class="saved-card-query">From: "{{ item.query }}"</p>
+    {% if item.note %}<p class="saved-card-snippet" style="margin-bottom: var(--space-3);">{{ item.note }}</p>{% endif %}
+    <p class="saved-card-snippet">{{ item.item.snippet[:150] }}...</p>
+    {% if item.tags %}
+    <div class="tags-list">
+      {% for tag in item.tags %}
+      <span class="tag">{{ tag }}</span>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </article>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: var(--space-16);">
+  <div class="logo-splash" aria-hidden="true">{% include '_logo.html' %}</div>
+  <p style="color: var(--color-ink-secondary); font-size: var(--space-4);">No saved items yet. Save facts, articles, and insights as you search.</p>
+</div>
+{% endif %}
+{% endblock %}

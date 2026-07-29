@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}KitPocket{% endblock %}
+{% block content %}
+<section class="hero" role="region" aria-label="Hero" style="position: relative;">
+  <!-- corner bracket marks -->
+  <svg class="corner-bracket top-left" width="24" height="24" aria-hidden="true"><path d="M4 12 L4 4 L12 4" stroke="var(--border)" stroke-width="1" fill="none" stroke-linecap="square"/></svg>
+  <svg class="corner-bracket top-right" width="24" height="24" aria-hidden="true"><path d="M20 12 L20 4 L12 4" stroke="var(--border)" stroke-width="1" fill="none" stroke-linecap="square" transform="translate(0,0)"/></svg>
+  <svg class="corner-bracket bottom-left" width="24" height="24" aria-hidden="true"><path d="M4 12 L4 20 L12 20" stroke="var(--border)" stroke-width="1" fill="none" stroke-linecap="square" transform="translate(0,0)"/></svg>
+  <svg class="corner-bracket bottom-right" width="24" height="24" aria-hidden="true"><path d="M20 12 L20 20 L12 20" stroke="var(--border)" stroke-width="1" fill="none" stroke-linecap="square" transform="translate(0,0)"/></svg>
+
+  <div class="hero-badge" aria-hidden="true">
+    <div class="logo-splash" aria-hidden="true">{% include '_logo.html' %}</div>
+  </div>
+  <h1 class="hero-title">Scrape. Search.<br>Discover.</h1>
+  <p class="hero-subtitle">Paste a URL to pull it live, or type a plain query to search across the web and open knowledge sources.</p>
+
+  <div class="search-box-wrapper">
+    <form action="{{ url_for('go') }}" method="post" class="search-box" id="heroSearchForm">
+      <div class="search-box-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      </div>
+      <input type="text" name="query" class="search-box-input" placeholder="Search websites, domains, technologies..." autofocus required aria-label="Search query" id="heroSearchInput">
+      <span class="search-box-hint">Ctrl K</span>
+      <button type="submit" class="search-box-button">
+        Analyze
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      </button>
+    </form>
+  </div>
+
+  {% if recommendations %}
+  <div style="margin-bottom: var(--space-10);">
+    <div class="chip-label">Popular</div>
+    <div class="chip-list">
+      {% for rec in recommendations %}
+      <button class="chip" onclick="submitSearch('{{ rec.query }}')">{{ rec.title }}</button>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if recent_queries %}
+  <div style="margin-bottom: var(--space-10);">
+    <div class="chip-label">Recent</div>
+    <div class="chip-list">
+      {% for q in recent_queries %}
+      <button class="chip" onclick="submitSearch('{{ q }}')">{{ q }}</button>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</section>
+
+<!-- Tick ruler divider -->
+<svg class="tick-ruler" viewBox="0 0 100 4" preserveAspectRatio="none" aria-hidden="true">
+  <defs>
+    <pattern id="ticks" width="8" height="4" patternUnits="userSpaceOnUse">
+      <rect x="0" y="0" width="1" height="4" fill="var(--border)"></rect>
+    </pattern>
+  </defs>
+  <rect x="0" y="1.5" width="100%" height="1" fill="var(--border)"></rect>
+  <rect x="0" y="0" width="100%" height="4" fill="url(#ticks)" opacity="0.12"></rect>
+</svg>
+
+<section class="recon-card fade-in" style="animation-delay: 0.1s;">
+  <h2 class="card-title">Deep Recon</h2>
+  <p class="card-description">Passive reconnaissance from public sources. No active scanning, no probes — just public data.</p>
+
+  <div class="recon-capabilities">
+    <span class="recon-capability">WHOIS</span>
+    <span class="recon-capability">DNS</span>
+    <span class="recon-capability">TLS</span>
+    <span class="recon-capability">CT Logs</span>
+    <span class="recon-capability">ASN</span>
+    <span class="recon-capability">Headers</span>
+    <span class="recon-capability">Robots</span>
+    <span class="recon-capability">Sitemap</span>
+    <span class="recon-capability">MX</span>
+    <span class="recon-capability">SPF</span>
+    <span class="recon-capability">DMARC</span>
+    <span class="recon-capability">Subdomains</span>
+    <span class="recon-capability">Reverse DNS</span>
+    <span class="recon-capability">Fingerprint</span>
+    <span class="recon-capability">Wayback</span>
+    <span class="recon-capability">Cookies</span>
+  </div>
+
+  <form action="{{ url_for('recon') }}" method="post" class="recon-form">
+    <input type="text" name="target" class="recon-input" placeholder="example.com" required aria-label="Target domain">
+    <button type="submit" class="recon-button">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="22" y1="12" x2="18" y2="12"></line><line x1="6" y1="12" x2="2" y2="12"></line><line x1="12" y1="6" x2="12" y2="2"></line><line x1="12" y1="22" x2="12" y2="18"></line></svg>
+      Run Recon
+    </button>
+  </form>
+</section>
+{% endblock %}

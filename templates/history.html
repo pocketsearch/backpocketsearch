@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}History{% endblock %}
+{% block content %}
+<div style="margin-bottom: var(--space-8);">
+  <a href="{{ url_for('index') }}" class="back-link">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+    New search
+  </a>
+  <h1 class="section-title" style="margin-bottom: 0;">History</h1>
+</div>
+
+{% if rows %}
+<div class="history-table-wrapper">
+  <table class="history-table">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Query / URL</th>
+        <th>Result</th>
+        <th>Time</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td>
+          <span style="font-size: var(--space-2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; padding: 2px var(--space-2); border-radius: 999px; background: var(--color-bg); color: var(--color-ink-secondary);">
+            {{ {"page": "Page", "search": "Search", "recon": "Recon"}[row.kind] }}
+          </span>
+        </td>
+        <td class="truncate" style="max-width: 300px;">{{ row.label }}</td>
+        <td style="color: var(--color-ink-secondary); font-size: var(--space-3);">{{ row.meta }}</td>
+        <td style="color: var(--color-ink-muted); font-size: var(--space-2); white-space: nowrap;">{{ row.created_at[:16] }}</td>
+        <td>
+          {% if row.kind == "page" %}
+            <a href="{{ url_for('result', scrape_id=row.id) }}" style="font-weight: 500; color: var(--color-primary); text-decoration: none;">View</a>
+          {% elif row.kind == "search" %}
+            <a href="{{ url_for('search_result', search_id=row.id) }}" style="font-weight: 500; color: var(--color-primary); text-decoration: none;">View</a>
+          {% else %}
+            <a href="{{ url_for('recon_result', recon_id=row.id) }}" style="font-weight: 500; color: var(--color-primary); text-decoration: none;">View</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: var(--space-16);">
+  <div class="logo-splash" aria-hidden="true">{% include '_logo.html' %}</div>
+  <p style="color: var(--color-ink-secondary); font-size: var(--space-4);">No activity yet.</p>
+</div>
+{% endif %}
+{% endblock %}

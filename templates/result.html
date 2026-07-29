@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Result — {{ r.title or r.url }}{% endblock %}
+{% block content %}
+<div style="margin-bottom: var(--space-8);">
+  <a href="{{ url_for('index') }}" class="back-link">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+    New search
+  </a>
+  <h1 class="section-title" style="margin-bottom: var(--space-2); font-weight:600; font-size:1.15rem;">{{ r.title or "(no title)" }}</h1>
+  <p style="font-size: 0.9rem; color: var(--ink-muted); word-break: break-all; margin-bottom: var(--space-3); font-family: var(--font-mono); font-weight:400;">{{ r.url }}</p>
+  {% if r.description %}<p style="color: var(--ink-muted); line-height: 1.7; margin-bottom: var(--space-6); font-size: 0.95rem;">{{ r.description }}</p>{% endif %}
+
+  <form action="{{ url_for('recon') }}" method="post" id="reconForm" style="margin-bottom: var(--space-6);">
+    <input type="hidden" name="target" value="{{ r.url }}">
+    <button type="submit" class="recon-button" id="reconBtn">
+      Run deep recon on this domain
+    </button>
+  </form>
+</div>
+
+{# Summary sentence #}
+{% if r.response_ms is defined and r.word_count is defined and r.link_count is defined %}
+<p class="summary-line" style="color: var(--ink-muted); font-family: var(--font-body); font-size: 0.95rem; margin-bottom: var(--space-4);">Responded in {{ r.response_ms }} ms with {{ r.word_count }} words and {{ r.link_count }} links indexed.</p>
+{% endif %}
+
+{# Metrics grid #}
+<div class="metrics-grid" role="region" aria-label="Page metrics">
+  {# Determine error state #}
+  {% set is_error = (r.status_code is not defined) or (r.status_code is none) or (r.status_code >= 400) %}
+
+  {# STATUS card always present; show error message if failed #}
+  <div class="metric metric--status" style="animation-delay: 0ms;">
+    <div class="metric-label">Status</div>
+    <div class="metric-number {% if r.status_code >=200 and r.status_code <300 %}status-ok{% elif r.status_code >=400 %}status-err{% endif %}">
+      {% if is_error and r.error %}
+        <span class="metric-error" style="font-family:var(--font-mono); color:var(--ink-muted);">{{ r.error }}</span>
+      {% elif is_error and not r.status_code %}
+        <span class="metric-error" style="font-family:var(--font-mono); color:var(--ink-muted);">No response</span>
+      {% else %}
+        {{ r.status_code }}
+      {% endif %}
+    </div>
+  </div>
+
+  {% if not is_error %}
+  <div class="metric metric--response metric--large" style="animation-delay: 40ms;">
+    <div class="metric-label">Response</div>
+    <div class="metric-number">{{ r.response_ms }} <span style="font-size:0.9rem; font-weight:500; color:var(--ink);">ms</span></div>
+    <div class="metric-sub" style="font-family:var(--font-mono); font-size:0.7rem; color:var(--ink-muted); margin-top:6px;">
+      {% if r.response_ms < 300 %}fast{% elif r.response_ms <= 1000 %}typical{% else %}slow{% endif %}
+    </div>
+  </div>
+
+  <div class="metric" style="animation-delay: 80ms;">
+    <div class="metric-label">Words</div>
+    <div class="metric-number">{{ r.word_count }}</div>
+  </div>
+
+  <div class="metric" style="animation-delay: 120ms;">
+    <div class="metric-label">Links</div>
+    <div class="metric-number">{{ r.link_count }}</div>
+  </div>
+
+  <div class="metric" style="animation-delay: 160ms;">
+    <div class="metric-label">Images</div>
+    <div class="metric-number">{{ r.image_count }}</div>
+  </div>
+  {% else %}
+  {# suppress other metrics when error #}
+  {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  var form = document.getElementById('reconForm');
+  var btn = document.getElementById('reconBtn');
+  if (!form || !btn) return;
+  form.addEventListener('submit', function(e){
+    // show skeleton placeholders while request is in flight
+    var grid = document.querySelector('.metrics-grid');
+    if (grid) {
+      grid.innerHTML = '';
+      for (var i=0;i<4;i++){
+        var s = document.createElement('div');
+        s.className = 'metric skeleton';
+        s.style.animationDelay = (i*40)+'ms';
+        grid.appendChild(s);
+      }
+    }
+    btn.disabled = true;
+    btn.textContent = 'Running...';
+    // insert small spinning logo
+    var spinner = document.createElement('span');
+    spinner.className = 'btn-spinner';
+    spinner.innerHTML = `{% include '_logo.html' %}`;
+    btn.prepend(spinner);
+    // add spin class
+    spinner.querySelector('.rotate-ring')?.classList.add('active-spin');
+    // allow form to submit normally
+  });
+});
+</script>
+
+{% if r.headings %}
+<div class="analysis-card" style="margin-bottom: var(--space-6);">
+  <div class="analysis-card-title">Headings</div>
+  <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--space-2);">
+    {% for h in r.headings %}
+    <li style="font-size: var(--space-3); padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border);">{{ h }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<div class="dashboard-grid">
+  {% if r.links %}
+  <div class="analysis-card">
+    <div class="analysis-card-title">Links ({{ r.link_count }})</div>
+    <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--space-2); max-height: 400px; overflow-y: auto;">
+      {% for l in r.links %}
+      <li><a href="{{ l }}" target="_blank" rel="noopener" style="font-size: var(--space-3); color: var(--color-ink-secondary); word-break: break-all; text-decoration: none;">{{ l }}</a></li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% if r.images %}
+  <div class="analysis-card">
+    <div class="analysis-card-title">Images ({{ r.image_count }})</div>
+    <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--space-2); max-height: 400px; overflow-y: auto;">
+      {% for i in r.images %}
+      <li><a href="{{ i }}" target="_blank" rel="noopener" style="font-size: var(--space-3); color: var(--color-ink-secondary); word-break: break-all; text-decoration: none;">{{ i }}</a></li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>{% block title %}KitPocket{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script>
+    (function() {
+      try {
+        const prefs = JSON.parse(localStorage.getItem('kitpocket-prefs') || '{}');
+        if (prefs.theme === 'dark') document.documentElement.classList.add('dark');
+        if (prefs.density) document.documentElement.setAttribute('data-density', prefs.density);
+        if (prefs.fontSize) document.documentElement.style.fontSize = prefs.fontSize + 'px';
+      } catch(e) {}
+    })();
+  </script>
+</head>
+<body>
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="navbar-inner">
+      <a class="navbar-brand" href="{{ url_for('index') }}">
+        <span class="brand-logo" aria-hidden="true">{% include '_logo.html' %}</span>
+        <span class="brand-name">KitPocket</span>
+      </a>
+
+      <nav class="navbar-nav" aria-label="Main navigation">
+        <div class="navbar-nav-item">
+          <a href="{{ url_for('index') }}" class="navbar-nav-link {% if request.endpoint == 'index' %}active{% endif %}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            Search
+          </a>
+        </div>
+        <div class="navbar-nav-item">
+          <a href="{{ url_for('workspace') }}" class="navbar-nav-link {% if request.endpoint == 'workspace' %}active{% endif %}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            Workspace
+          </a>
+        </div>
+        <div class="navbar-nav-item">
+          <a href="{{ url_for('saved_items') }}" class="navbar-nav-link {% if request.endpoint == 'saved_items' %}active{% endif %}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+            Saved
+          </a>
+        </div>
+        <div class="navbar-nav-item">
+          <a href="{{ url_for('history') }}" class="navbar-nav-link {% if request.endpoint == 'history' %}active{% endif %}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            History
+          </a>
+        </div>
+        <div class="navbar-nav-item">
+          <a href="{{ url_for('about') }}" class="navbar-nav-link {% if request.endpoint == 'about' %}active{% endif %}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            About
+          </a>
+        </div>
+      </nav>
+
+      <div class="navbar-actions">
+        <form action="{{ url_for('theme') }}" method="post" style="display: inline;">
+          <input type="hidden" name="mode" value="{% if theme == 'dark' %}light{% else %}dark{% endif %}">
+          <button type="submit" class="navbar-icon-btn" title="Toggle theme" aria-label="Toggle dark mode">
+            {% if theme == 'dark' %}
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+            {% else %}
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            {% endif %}
+          </button>
+        </form>
+        <button class="navbar-icon-btn" aria-label="Settings" onclick="toggleSettings()" title="Settings">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+        <div class="navbar-avatar" title="Profile">U</div>
+        <button class="navbar-toggle" aria-label="Toggle navigation" onclick="document.querySelector('.navbar-mobile').classList.toggle('open')">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Status Bar -->
+  <div class="statusbar">
+    <div class="statusbar-inner">
+      <div class="statusbar-item">
+        <div class="statusbar-dot"></div>
+        <span>Backend</span>
+        <span class="statusbar-value">Connected</span>
+      </div>
+      <div class="statusbar-item">
+        <span>Searches</span>
+        <span class="statusbar-value">{{ statusbar.search_count }}</span>
+      </div>
+      <div class="statusbar-item">
+        <span>Saved</span>
+        <span class="statusbar-value">{{ statusbar.saved_count }}</span>
+      </div>
+      <div class="statusbar-item">
+        <span>Entities</span>
+        <span class="statusbar-value">{{ statusbar.entity_count }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Navigation -->
+  <div class="navbar-mobile" id="mobileNav">
+    <nav class="navbar-mobile-nav">
+      <a href="{{ url_for('index') }}" class="navbar-mobile-link {% if request.endpoint == 'index' %}active{% endif %}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        Search
+      </a>
+      <a href="{{ url_for('workspace') }}" class="navbar-mobile-link {% if request.endpoint == 'workspace' %}active{% endif %}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        Workspace
+      </a>
+      <a href="{{ url_for('saved_items') }}" class="navbar-mobile-link {% if request.endpoint == 'saved_items' %}active{% endif %}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+        Saved
+      </a>
+      <a href="{{ url_for('history') }}" class="navbar-mobile-link {% if request.endpoint == 'history' %}active{% endif %}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        History
+      </a>
+      <a href="{{ url_for('about') }}" class="navbar-mobile-link {% if request.endpoint == 'about' %}active{% endif %}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+        About
+      </a>
+    </nav>
+  </div>
+
+  <!-- Main Content -->
+  <main>
+    <div class="container">
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="flash" role="status" aria-live="polite" style="margin-top: var(--space-6); margin-bottom: var(--space-8);">
+            {% for m in messages %}<p>{{ m }}</p>{% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="footer-brand-name"><span class="brand-logo footer-logo" aria-hidden="true">{% include '_logo.html' %}</span> <span class="brand-name">KitPocket</span></div>
+          <p class="footer-brand-desc">Open Source intelligence. Self-hosted, no accounts, no tracking.</p>
+        </div>
+        <div>
+          <div class="footer-heading">Navigation</div>
+          <ul class="footer-links">
+            <li><a href="{{ url_for('index') }}">Search</a></li>
+            <li><a href="{{ url_for('saved_items') }}">Saved</a></li>
+            <li><a href="{{ url_for('history') }}">History</a></li>
+            <li><a href="{{ url_for('about') }}">About</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-heading">Resources</div>
+          <ul class="footer-links">
+            <li><a href="{{ url_for('about') }}">About</a></li>
+            <li><a href="https://github.com" target="_blank" rel="noopener">GitHub</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-heading">Links</div>
+          <ul class="footer-links">
+            <li><a href="{{ url_for('history') }}">History</a></li>
+            <li><a href="{{ url_for('saved_items') }}">Saved</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>KitPocket — open source, self-hosted</span>
+        <span>Built with Flask, requests, and BeautifulSoup</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Settings overlay -->
+  <div class="settings-overlay" id="settingsOverlay" onclick="toggleSettings()"></div>
+
+  <!-- Settings panel -->
+  <aside class="settings-panel" id="settingsPanel" aria-label="Settings">
+    <div class="settings-header">
+      <h2 class="settings-title">Settings</h2>
+      <button class="settings-close" onclick="toggleSettings()" aria-label="Close settings">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+
+    <div class="settings-group">
+      <span class="settings-label">Theme</span>
+      <div class="settings-options">
+        <button class="settings-option" data-theme-value="light" onclick="setTheme('light')">Light</button>
+        <button class="settings-option" data-theme-value="dark" onclick="setTheme('dark')">Dark</button>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <span class="settings-label">Density</span>
+      <div class="settings-options">
+        <button class="settings-option" data-density-value="compact" onclick="setDensity('compact')">Compact</button>
+        <button class="settings-option" data-density-value="default" onclick="setDensity('default')">Default</button>
+        <button class="settings-option" data-density-value="spacious" onclick="setDensity('spacious')">Spacious</button>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <span class="settings-label">Font Size</span>
+      <div class="settings-options">
+        <button class="settings-option" data-font-value="14" onclick="setFontSize(14)">S</button>
+        <button class="settings-option" data-font-value="16" onclick="setFontSize(16)">M</button>
+        <button class="settings-option" data-font-value="18" onclick="setFontSize(18)">L</button>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <span class="settings-label">Border Radius</span>
+      <div class="settings-options">
+        <button class="settings-option" data-radius-value="sharp" onclick="setRadius('sharp')">Sharp</button>
+        <button class="settings-option" data-radius-value="default" onclick="setRadius('default')">Default</button>
+        <button class="settings-option" data-radius-value="pill" onclick="setRadius('pill')">Pill</button>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <span class="settings-label">Borders</span>
+      <div class="settings-options">
+        <button class="settings-option" data-border-value="default" onclick="setBorder('default')">Default</button>
+        <button class="settings-option" data-border-value="subtle" onclick="setBorder('subtle')">Subtle</button>
+        <button class="settings-option" data-border-value="none" onclick="setBorder('none')">None</button>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <span class="settings-label">Accent</span>
+      <div class="settings-options">
+        <button class="settings-option" data-accent-value="indigo" onclick="setAccent('indigo')">Indigo</button>
+        <button class="settings-option" data-accent-value="blue" onclick="setAccent('blue')">Blue</button>
+        <button class="settings-option" data-accent-value="emerald" onclick="setAccent('emerald')">Green</button>
+        <button class="settings-option" data-accent-value="rose" onclick="setAccent('rose')">Rose</button>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <span class="settings-label">Animations</span>
+      <div class="settings-options">
+        <button class="settings-option" data-animations-value="on" onclick="setAnimations('on')">On</button>
+        <button class="settings-option" data-animations-value="off" onclick="setAnimations('off')">Off</button>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <span class="settings-label">Font</span>
+      <div class="settings-options">
+        <button class="settings-option" data-font-choice="inter" onclick="setFontChoice('inter')">Inter</button>
+        <button class="settings-option" data-font-choice="system" onclick="setFontChoice('system')">System</button>
+        <button class="settings-option" data-font-choice="mono" onclick="setFontChoice('mono')">Mono</button>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <span class="settings-label">Palette</span>
+      <div class="settings-options">
+        <button class="settings-option" data-palette-value="slate" onclick="setPalette('slate')">Slate</button>
+        <button class="settings-option" data-palette-value="warm" onclick="setPalette('warm')">Warm</button>
+        <button class="settings-option" data-palette-value="forest" onclick="setPalette('forest')">Forest</button>
+        <button class="settings-option" data-palette-value="midnight" onclick="setPalette('midnight')">Night</button>
+        <button class="settings-option" data-palette-value="rose" onclick="setPalette('rose')">Rose</button>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <span class="settings-label">Card Style</span>
+      <div class="settings-options">
+        <button class="settings-option" data-card-style-value="default" onclick="setCardStyle('default')">Default</button>
+        <button class="settings-option" data-card-style-value="flat" onclick="setCardStyle('flat')">Flat</button>
+        <button class="settings-option" data-card-style-value="shadow" onclick="setCardStyle('shadow')">Shadow</button>
+        <button class="settings-option" data-card-style-value="elevated" onclick="setCardStyle('elevated')">Elevated</button>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <span class="settings-label">Width</span>
+      <div class="settings-options">
+        <button class="settings-option" data-width-value="narrow" onclick="setWidth('narrow')">Narrow</button>
+        <button class="settings-option" data-width-value="default" onclick="setWidth('default')">Default</button>
+        <button class="settings-option" data-width-value="wide" onclick="setWidth('wide')">Wide</button>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <span class="settings-label">Navbar</span>
+      <div class="settings-options">
+        <button class="settings-option" data-navbar-value="visible" onclick="setNavbar('visible')">Show</button>
+        <button class="settings-option" data-navbar-value="hidden" onclick="setNavbar('hidden')">Hide</button>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <span class="settings-label">Status Bar</span>
+      <div class="settings-options">
+        <button class="settings-option" data-statusbar-value="visible" onclick="setStatusBar('visible')">Show</button>
+        <button class="settings-option" data-statusbar-value="hidden" onclick="setStatusBar('hidden')">Hide</button>
+      </div>
+    </div>
+  </aside>
+
+  <script>
+    function toggleSettings() {
+      document.getElementById('settingsPanel').classList.toggle('open');
+      document.getElementById('settingsOverlay').classList.toggle('open');
+    }
+
+    function setTheme(mode) {
+      document.documentElement.classList.toggle('dark', mode === 'dark');
+      savePrefs({ theme: mode });
+      document.querySelectorAll('[data-theme-value]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.themeValue === mode);
+      });
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '{{ url_for("theme") }}';
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'mode';
+      input.value = mode;
+      form.appendChild(input);
+      document.body.appendChild(form);
+      form.submit();
+    }
+
+    function setDensity(density) {
+      const root = document.documentElement;
+      if (density === 'default') {
+        root.removeAttribute('data-density');
+      } else {
+        root.setAttribute('data-density', density);
+      }
+      savePrefs({ density: density === 'default' ? '' : density });
+      document.querySelectorAll('[data-density-value]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.densityValue === density);
+      });
+    }
+
+    function setFontSize(size) {
+      document.documentElement.style.fontSize = size + 'px';
+      savePrefs({ fontSize: size });
+      document.querySelectorAll('[data-font-value]').forEach(btn => {
+        btn.classList.toggle('active', parseInt(btn.dataset.fontValue) === parseInt(size));
+      });
+    }
+
+    function setRadius(radius) {
+      const root = document.documentElement;
+      if (radius === 'default') {
+        root.removeAttribute('data-radius');
+      } else {
+        root.setAttribute('data-radius', radius);
+      }
+      savePrefs({ radius: radius === 'default' ? '' : radius });
+      document.querySelectorAll('[data-radius-value]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.radiusValue === radius);
+      });
+    }
+
+    function setBorder(border) {
+      const root = document.documentElement;
+      if (border === 'default') {
+        root.removeAttribute('data-border');
+      } else {
+        root.setAttribute('data-border', border);
+      }
+      savePrefs({ border: border === 'default' ? '' : border });
+      document.querySelectorAll('[data-border-value]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.borderValue === border);
+      });
+    }
+
+    function setAccent(accent) {
+      const root = document.documentElement;
+      if (accent === 'indigo') {
+        root.removeAttribute('data-accent');
+      } else {
+        root.setAttribute('data-accent', accent);
+      }
+      savePrefs({ accent: accent === 'indigo' ? '' : accent });
+      document.querySelectorAll('[data-accent-value]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.accentValue === accent);
+      });
+    }
+
+    function setAnimations(state) {
+      const root = document.documentElement;
+      root.setAttribute('data-animations', state);
+      savePrefs({ animations: state });
+      document.querySelectorAll('[data-animations-value]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.animationsValue === state);
+      });
+    }
+
+    function setFontChoice(font) {
+      const root = document.documentElement;
+      if (font === 'inter') {
+        root.removeAttribute('data-font');
+      } else {
+        root.setAttribute('data-font', font);
+      }
+      savePrefs({ fontChoice: font === 'inter' ? '' : font });
+      document.querySelectorAll('[data-font-choice]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.fontChoice === font);
+      });
+    }
+
+    function setPalette(palette) {
+      const root = document.documentElement;
+      if (palette === 'slate') {
+        root.removeAttribute('data-palette');
+      } else {
+        root.setAttribute('data-palette', palette);
+      }
+      savePrefs({ palette: palette === 'slate' ? '' : palette });
+      document.querySelectorAll('[data-palette-value]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.paletteValue === palette);
+      });
+    }
+
+    function setCardStyle(style) {
+      const root = document.documentElement;
+      if (style === 'default') {
+        root.removeAttribute('data-card-style');
+      } else {
+        root.setAttribute('data-card-style', style);
+      }
+      savePrefs({ cardStyle: style === 'default' ? '' : style });
+      document.querySelectorAll('[data-card-style-value]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.cardStyleValue === style);
+      });
+    }
+
+    function setWidth(width) {
+      const root = document.documentElement;
+      if (width === 'default') {
+        root.removeAttribute('data-width');
+      } else {
+        root.setAttribute('data-width', width);
+      }
+      savePrefs({ width: width === 'default' ? '' : width });
+      document.querySelectorAll('[data-width-value]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.widthValue === width);
+      });
+    }
+
+    function setNavbar(state) {
+      const root = document.documentElement;
+      root.setAttribute('data-navbar', state);
+      savePrefs({ navbar: state });
+      document.querySelectorAll('[data-navbar-value]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.navbarValue === state);
+      });
+    }
+
+    function setStatusBar(state) {
+      const root = document.documentElement;
+      root.setAttribute('data-statusbar', state);
+      savePrefs({ statusbar: state });
+      document.querySelectorAll('[data-statusbar-value]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.statusbarValue === state);
+      });
+    }
+
+    function savePrefs(updates) {
+      try {
+        const current = JSON.parse(localStorage.getItem('kitpocket-prefs') || '{}');
+        Object.assign(current, updates);
+        localStorage.setItem('kitpocket-prefs', JSON.stringify(current));
+      } catch(e) {}
+    }
+
+    function submitSearch(query) {
+      const form = document.getElementById('heroSearchForm');
+      if (form && query) {
+        const input = form.querySelector('input[name="query"]');
+        if (input) {
+          input.value = query;
+          form.submit();
+          return;
+        }
+      }
+      window.location.href = '{{ url_for("go") }}?query=' + encodeURIComponent(query || '');
+    }
+
+    (function initSettingsUI() {
+      try {
+        const prefs = JSON.parse(localStorage.getItem('kitpocket-prefs') || '{}');
+        if (prefs.theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+        if (prefs.density && prefs.density !== 'default') {
+          document.documentElement.setAttribute('data-density', prefs.density);
+        }
+        if (prefs.fontSize) {
+          document.documentElement.style.fontSize = prefs.fontSize + 'px';
+        }
+        if (prefs.radius && prefs.radius !== 'default') {
+          document.documentElement.setAttribute('data-radius', prefs.radius);
+        }
+        if (prefs.border && prefs.border !== 'default') {
+          document.documentElement.setAttribute('data-border', prefs.border);
+        }
+        if (prefs.accent && prefs.accent !== 'indigo') {
+          document.documentElement.setAttribute('data-accent', prefs.accent);
+        }
+        if (prefs.animations === 'off') {
+          document.documentElement.setAttribute('data-animations', 'off');
+        }
+        if (prefs.fontChoice && prefs.fontChoice !== 'inter') {
+          document.documentElement.setAttribute('data-font', prefs.fontChoice);
+        }
+        if (prefs.palette && prefs.palette !== 'slate') {
+          document.documentElement.setAttribute('data-palette', prefs.palette);
+        }
+        if (prefs.cardStyle && prefs.cardStyle !== 'default') {
+          document.documentElement.setAttribute('data-card-style', prefs.cardStyle);
+        }
+        if (prefs.width && prefs.width !== 'default') {
+          document.documentElement.setAttribute('data-width', prefs.width);
+        }
+        if (prefs.navbar === 'hidden') {
+          document.documentElement.setAttribute('data-navbar', 'hidden');
+        }
+        if (prefs.statusbar === 'hidden') {
+          document.documentElement.setAttribute('data-statusbar', 'hidden');
+        }
+        document.querySelectorAll('[data-density-value]').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.densityValue === (prefs.density || 'default'));
+        });
+        document.querySelectorAll('[data-font-value]').forEach(btn => {
+          btn.classList.toggle('active', parseInt(btn.dataset.fontValue) === parseInt(prefs.fontSize || '16'));
+        });
+        document.querySelectorAll('[data-theme-value]').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.themeValue === (prefs.theme || 'light'));
+        });
+        document.querySelectorAll('[data-radius-value]').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.radiusValue === (prefs.radius || 'default'));
+        });
+        document.querySelectorAll('[data-border-value]').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.borderValue === (prefs.border || 'default'));
+        });
+        document.querySelectorAll('[data-accent-value]').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.accentValue === (prefs.accent || 'indigo'));
+        });
+        document.querySelectorAll('[data-animations-value]').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.animationsValue === (prefs.animations || 'on'));
+        });
+        document.querySelectorAll('[data-font-choice]').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.fontChoice === (prefs.fontChoice || 'inter'));
+        });
+        document.querySelectorAll('[data-palette-value]').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.paletteValue === (prefs.palette || 'slate'));
+        });
+        document.querySelectorAll('[data-card-style-value]').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.cardStyleValue === (prefs.cardStyle || 'default'));
+        });
+        document.querySelectorAll('[data-width-value]').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.widthValue === (prefs.width || 'default'));
+        });
+        document.querySelectorAll('[data-navbar-value]').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.navbarValue === (prefs.navbar || 'visible'));
+        });
+        document.querySelectorAll('[data-statusbar-value]').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.statusbarValue === (prefs.statusbar || 'visible'));
+        });
+      } catch(e) {}
+    })();
+  </script>
+</body>
+</html>
