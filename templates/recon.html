@@ -34,7 +34,7 @@
       {% for record_type, values in rec.data.dns.records.items() %}
       <div>
         <div style="font-size: var(--space-2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-muted); margin-bottom: var(--space-1);">{{ record_type }}</div>
-        <div style="font-size: var(--space-3); font-family: var(--font-mono); color: var(--color-ink); word-break: break-all;">{{ values | join(', ') }}</div>
+        <div style="font-size: var(--space-3); font-family: var(--font-mono); color: var(--ink); word-break: break-all;">{{ values | join(', ') }}</div>
       </div>
       {% endfor %}
     </div>
