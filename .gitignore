@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+
+# Databases
+*.db
+data/*.db
+*.db-shm
+*.db-wal
+
+# Virtualenv
+venv/
+.env
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Screenshots and generated
+.screenshots/
+
+# Mac / Linux
+.DS_Store
+
