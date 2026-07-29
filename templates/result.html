@@ -76,6 +76,40 @@ document.addEventListener('DOMContentLoaded', function(){
   var btn = document.getElementById('reconBtn');
   if (!form || !btn) return;
   form.addEventListener('submit', function(e){
+    e.preventDefault();
+    // show skeleton placeholders while request is in flight
+    var grid = document.querySelector('.metrics-grid');
+    if (grid) {
+      grid.innerHTML = '';
+      for (var i=0;i<4;i++){
+        var s = document.createElement('div');
+        s.className = 'metric skeleton';
+        s.style.animationDelay = (i*40)+'ms';
+        grid.appendChild(s);
+      }
+    }
+    btn.disabled = true;
+    btn.textContent = 'Running...';
+    var spinner = document.createElement('span');
+    spinner.className = 'btn-spinner';
+    spinner.innerHTML = logo_svg_inner();
+    btn.prepend(spinner);
+    // add spin class
+    spinner.querySelector('.rotate-ring')?.classList.add('active-spin');
+
+    // submit via fetch and follow redirect
+    var fd = new FormData(form);
+    fetch(form.action, { method: 'POST', body: fd, credentials: 'same-origin', redirect: 'follow' })
+      .then(function(resp){
+        // when server redirects to recon result, navigate there
+        window.location = resp.url || '/';
+      }).catch(function(err){
+        console.error('Recon request failed', err);
+        btn.disabled = false;
+        btn.textContent = 'Run deep recon on this domain';
+        alert('Recon failed: ' + (err.message || err));
+      });
+  });
     // show skeleton placeholders while request is in flight
     var grid = document.querySelector('.metrics-grid');
     if (grid) {
@@ -99,6 +133,43 @@ document.addEventListener('DOMContentLoaded', function(){
     // allow form to submit normally
   });
 });
+
+function logo_svg_inner(){ return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-hidden="false" focusable="false" class="logo-svg">
+  <title>PocketSearch</title>
+  <g fill="currentColor" stroke="none">
+    <!-- axes: evenly spaced dots along vertical and horizontal lines -->
+    <g class="axes">
+      <!-- horizontal axis -->
+      <circle cx="8" cy="32" r="2" />
+      <circle cx="22" cy="32" r="2" />
+      <circle cx="36" cy="32" r="2" />
+      <circle cx="50" cy="32" r="2" />
+      <!-- vertical axis -->
+      <circle cx="32" cy="8" r="2" />
+      <circle cx="32" cy="22" r="2" />
+      <circle cx="32" cy="36" r="2" />
+      <circle cx="32" cy="50" r="2" />
+    </g>
+
+    <!-- radial ring (rotates) -->
+    <g class="radial-ring rotate-ring" style="opacity:0.4">
+      <circle cx="32" cy="4" r="1.8" />
+      <circle cx="46.5" cy="10.5" r="1.8" />
+      <circle cx="56" cy="24" r="1.8" />
+      <circle cx="56" cy="40" r="1.8" />
+      <circle cx="46.5" cy="53.5" r="1.8" />
+      <circle cx="32" cy="60" r="1.8" />
+      <circle cx="17.5" cy="53.5" r="1.8" />
+      <circle cx="8" cy="40" r="1.8" />
+      <circle cx="8" cy="24" r="1.8" />
+      <circle cx="17.5" cy="10.5" r="1.8" />
+    </g>
+
+    <!-- center solid origin -->
+    <circle cx="32" cy="32" r="3" />
+  </g>
+</svg>`; }
+
 </script>
 
 {% if r.headings %}
