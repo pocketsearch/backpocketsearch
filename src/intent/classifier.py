@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Lightweight intent classifier prototype.
+"""Lightweight intent classifier prototype with conservative safety checks.
 
 Behavior: load seed intents (JSON), build keyword->intent index, and score a query
-by keyword overlap. Returns ranked intents, inferred tags, and expanded query terms.
-
-This is dependency-free and suitable as a starting point for an ML-backed classifier.
+by keyword overlap. Runs a safety analyzer first to detect clearly malicious or
+dual-use queries. For 'clarify' actions, returns suggested clarifying
+questions so the caller/UI can prompt the user before issuing code samples.
 """
 import json
 import sys
@@ -16,6 +16,9 @@ BASE = os.path.dirname(__file__)
 SEED = os.path.join(BASE, 'seed_intents.json')
 
 WORD_RE = re.compile(r"\w+")
+
+# local import of safety utilities
+import safety
 
 class IntentClassifier:
     def __init__(self, seed_path=SEED):
@@ -31,6 +34,18 @@ class IntentClassifier:
         return [t.lower() for t in WORD_RE.findall(text)]
 
     def predict(self, query):
+        # Run safety analysis first
+        safety_result = safety.analyze(query)
+        if safety_result.get('action') == 'refuse':
+            # Immediately return a refusal payload; UI should not display code
+            return {
+                'query': query,
+                'safety': safety_result,
+                'ranked_intents': [],
+                'inferred_tags': [],
+                'expanded_query_terms': [],
+            }
+
         tokens = self._tokens(query)
         token_counts = Counter(tokens)
         intent_scores = defaultdict(float)
@@ -76,13 +91,20 @@ class IntentClassifier:
                     seen.add(s)
                     out.append(s)
             return out
-        return {
+
+        out = {
             'query': query,
             'tokens': tokens,
             'ranked_intents': [{'intent': i, 'score': s} for i, s in ranked],
             'inferred_tags': dedupe(inferred_tags),
             'expanded_query_terms': dedupe(expanded)[:50]
         }
+
+        # If safety asked for clarification, attach questions but still return intents
+        if safety_result.get('action') == 'clarify':
+            out['safety'] = safety_result
+
+        return out
 
 
 if __name__ == '__main__':
