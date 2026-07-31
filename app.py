@@ -446,7 +446,7 @@ def go():
             "meta": "fallback",
         }]
 
-    total_ms = max(web_ms, 150)  # reflect at least some elapsed time
+    total_ms = web_ms
 
     db = get_db()
     cur = db.execute(
