@@ -2,24 +2,24 @@
  * PocketSearch - Technical/HUD design tokens
  */
 :root {
-  --bg: #FAFAF9; /* base, near-white */
-  --surface: #FFFFFF;
+  --bg: #FAFAFA; /* base, near-white */
+  --surface: #FFFFFF; /* primary surface color */
   --ink: #16171A;
   --ink-muted: #6B6E76;
-  --border: #E4E4E7;
+  --border: #E5E7EB; /* new border color */
   --border-strong: #C6C7CC;
-  --accent: #4A5568; /* graphite-blue signal color */
-  --radius: 2px;
+  --accent: #6D5EFC; /* new accent color */
+  --radius: 6px; /* updated radius for all components */
 
   /* Spacing scale */
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.5rem;
-  --space-6: 2rem;
-  --space-8: 3rem;
-  --space-12: 4rem;
+  --space-1: 8px; /* 8px spacing */
+  --space-2: 16px; /* 16px spacing */
+  --space-3: 24px; /* 24px spacing */
+  --space-4: 32px; /* 32px spacing */
+  --space-5: 40px; /* 40px spacing */
+  --space-6: 48px; /* 48px spacing */
+  --space-8: 64px; /* 64px spacing */
+  --space-12: 80px; /* 80px spacing */
 
   --max-width: 1100px;
   --header-height: 56px;
@@ -176,6 +176,15 @@ html.dark[data-accent="rose"] {
 
 /* End of style tokens. Remaining component styles continue below. */
 [data-navbar="hidden"] .navbar {
+  height: auto;
+  padding: var(--space-6); /* Updated to design token */
+  background: var(--surface);
+  border: 1px solid var(--border);
+
+  transition: all var(--transition-fast); /* Updated to use design token */
+
+  border-radius: var(--radius); /* Ensured reference to design token */ /* Referring to design token */
+  padding: var(--space-5); /* Ensure consistent spacing */
   display: none;
 }
 
@@ -203,7 +212,7 @@ html.dark[data-accent="rose"] {
 }
 [data-density="spacious"] {
   --space-4: 1.25rem;
-  --space-6: 2rem;
+  --space-6: 48px; /* 48px spacing */
   --space-8: 2.5rem;
   --space-12: 3.5rem;
   --header-height: 76px;
@@ -213,18 +222,18 @@ html.dark[data-accent="rose"] {
 *, *::before, *::after { box-sizing: border-box; }
 
 html {
-  font-size: 16px;
+  font-size: var(--space-3); /* Updated to use design token */
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  margin: 0;
-  background: var(--color-surface);
+  margin: var(--space-2); /* Updated to design token */
+  background: var(--surface); /* Updated to unified surface color */
   color: var(--color-ink);
   font-family: var(--font-body);
-  font-size: 0.9375rem;
+  font-size: var(--space-3); /* Updated to design token */
   line-height: 1.6;
   min-height: 100vh;
   display: flex;
@@ -235,7 +244,7 @@ body {
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 body {
-  margin: 0;
+  margin: var(--space-2); /* Updated to design token */
   font-family: var(--font-body), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   color: var(--color-ink);
   background: var(--color-bg);
@@ -243,7 +252,7 @@ body {
 }
 
 h1, h2, h3, h4 {
-  margin: 0;
+  margin: var(--space-2); /* Updated to design token */
   line-height: 1.03;
   font-family: var(--font-display);
   font-weight: 600;
@@ -254,7 +263,7 @@ h1 { font-size: clamp(2.5rem, 5vw, 4.5rem); }
 h2 { font-size: clamp(1.25rem, 2.5vw, 1.5rem); }
 h3 { font-size: 1.125rem; }
 
-p { margin: 0; color: var(--color-ink-muted); font-weight: 400; }
+p { margin: var(--space-2); /* Updated to design token */ color: var(--color-ink-muted); font-weight: 400; }
 
 a { color: inherit; text-decoration: none; }
 a:hover { color: var(--color-ink); }
@@ -354,13 +363,23 @@ a:hover { color: var(--color-ink); }
   }
 
   .workspace-tile {
+  border-radius: 16px; /* Updated for consistency */
+  padding: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+
+  transition: transform 150ms ease;
+
+  border-radius: 6px;
+  padding: var(--space-5); /* Ensure consistent spacing */
+  background: var(--surface);
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-3);
-    padding: var(--space-5);
+    padding: var(--space-5); /* Ensure consistent spacing */
     border: 1px solid var(--color-border);
-    background: var(--color-surface);
+    background: var(--surface); /* Updated to unified surface color */
     height: 220px;
     text-decoration: none;
     color: inherit;
@@ -369,7 +388,7 @@ a:hover { color: var(--color-ink); }
 
   .workspace-tile:focus, .workspace-tile:hover {
     transform: translateY(-2px);
-    background: var(--color-surface);
+    background: var(--surface); /* Updated to unified surface color */
     border-color: var(--color-border);
   }
 
@@ -474,7 +493,7 @@ main {
 .statusbar-dot {
   width: 10px;
   height: 10px;
-  border-radius: 0;
+  border-radius: var(--radius); /* Ensured reference to design token */ /* Referring to design token */
   display: inline-block;
   border: 1px solid var(--border);
   background: var(--accent);
@@ -498,15 +517,15 @@ main {
 .flash {
   background: var(--color-bg);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius);
+  border-radius: var(--radius); /* Ensured reference to design token */
   padding: var(--space-4) var(--space-6);
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-6); /* Updated to token */ /* Ensure consistent spacing */
   font-size: var(--space-3);
   color: var(--color-ink-secondary);
 }
 
 .flash p {
-  margin: 0;
+  margin: var(--space-2); /* Updated to design token */
 }
 
 .flash p + p {
@@ -518,11 +537,20 @@ main {
    ============================================ */
 
 .navbar {
+  height: auto;
+  padding: var(--space-6); /* Updated to design token */
+  background: var(--surface);
+  border: 1px solid var(--border);
+
+  transition: all var(--transition-fast); /* Updated to use design token */
+
+  border-radius: var(--radius); /* Ensured reference to design token */ /* Referring to design token */
+  padding: var(--space-5); /* Ensure consistent spacing */
   position: sticky;
   top: 0;
   z-index: 1000;
   height: var(--navbar-height);
-  background: var(--color-surface);
+  background: var(--surface); /* Updated to unified surface color */
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -690,9 +718,9 @@ main {
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--color-surface);
+  background: var(--surface); /* Updated to unified surface color */
   border-bottom: 1px solid var(--color-border);
-  padding: var(--space-6);
+  padding: var(--space-6); /* Updated to design token */
   transform: translateX(100%);
   transition: transform var(--duration) var(--ease);
   z-index: 999;
@@ -719,7 +747,7 @@ main {
   text-decoration: none;
   font-size: var(--space-5);
   font-weight: 500;
-  border-radius: var(--radius);
+  border-radius: var(--radius); /* Ensured reference to design token */
   transition: all var(--duration-fast) var(--ease);
 }
 
@@ -759,6 +787,11 @@ main {
 }
 
 .hero-badge {
+  border-radius: 6px;
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
@@ -767,8 +800,8 @@ main {
   color: var(--ink-muted);
   font-size: 0.75rem;
   font-weight: 600;
-  border-radius: var(--radius);
-  margin-bottom: var(--space-6);
+  border-radius: var(--radius); /* Ensured reference to design token */
+  margin-bottom: var(--space-6); /* Updated to token */ /* Ensure consistent spacing */
   border: 1px solid var(--border);
   font-family: var(--font-mono);
   text-transform: uppercase;
@@ -829,18 +862,23 @@ main {
 .search-box-wrapper {
   max-width: 720px;
   margin-inline: auto;
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-6); /* Updated to token */ /* Ensure consistent spacing */
 }
 
 .search-box {
+  border-radius: 6px;
+  padding: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: 14px 16px;
+  padding: var(--space-4) var(--space-5); /* Updated to design token */
   height: 56px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius); /* Ensured reference to design token */
   transition: border-color var(--transition-fast), background 150ms ease;
 }
 
@@ -859,6 +897,16 @@ main {
 }
 
 .search-box-input {
+  border-radius: 6px;
+  padding: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+
+  border-radius: 6px;
+  padding: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+
   flex: 1;
   border: none;
   background: transparent;
@@ -903,7 +951,7 @@ main {
   background: var(--ink);
   color: var(--surface);
   border: 1px solid var(--ink);
-  border-radius: var(--radius);
+  border-radius: var(--radius); /* Ensured reference to design token */
   font-family: var(--font-display);
   font-size: 0.875rem;
   font-weight: 600;
@@ -938,7 +986,7 @@ main {
   padding: 6px 8px;
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius); /* Ensured reference to design token */
   font-size: 0.75rem;
   font-weight: 400;
   color: var(--ink-muted);
@@ -970,9 +1018,9 @@ main {
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius); /* Ensured reference to design token */
   padding: 18px;
-  box-shadow: none;
+  box-shadow: var(--shadow-none); /* Reference to shadow token */
   transition: border-color var(--transition-fast);
 }
 
@@ -1004,9 +1052,9 @@ main {
 .recon-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius); /* Ensured reference to design token */
   padding: 18px;
-  box-shadow: none;
+  box-shadow: var(--shadow-none); /* Reference to shadow token */
   max-width: 880px;
   margin-inline: auto;
   position: relative;
@@ -1114,7 +1162,7 @@ main {
   gap: var(--space-1);
   padding: var(--space-1) var(--space-3);
   background: var(--color-bg);
-  border: 1px solid var(--color-border-subtle);
+  border: 1px solid var(--border); /* Update to unified border color */
   border-radius: var(--radius-sm);
   font-size: var(--space-2);
   font-weight: 500;
@@ -1127,11 +1175,16 @@ main {
 }
 
 .recon-input {
+  border-radius: 6px;
+  padding: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+
   flex: 1;
   height: 48px;
   padding: 0 var(--space-4);
   border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius);
+  border-radius: var(--radius); /* Ensured reference to design token */
   background: var(--color-bg);
   font-family: inherit;
   font-size: var(--space-3);
@@ -1153,7 +1206,7 @@ main {
   background: var(--ink);
   color: var(--surface);
   border: 1px solid var(--ink);
-  border-radius: var(--radius);
+  border-radius: var(--radius); /* Ensured reference to design token */
   font-family: var(--font-display);
   font-size: 0.9rem;
   font-weight: 600;
@@ -1233,17 +1286,37 @@ main {
 }
 
 .result-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-lg);
+  border-radius: 16px; /* Changed from pill shape to rectangular */
   padding: var(--space-5);
-  box-shadow: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+
+  transition: border-color var(--duration) var(--ease);
+
+  border-radius: 6px;
+  padding: var(--space-5); /* Ensure consistent spacing */
+  background: var(--surface);
+  background: var(--surface); /* Updated to unified surface color */
+  border: 1px solid var(--border); /* Update to unified border color */
+  border-radius: var(--radius-lg);
+  padding: var(--space-5); /* Ensure consistent spacing */
+  box-shadow: var(--shadow-none); /* Reference to shadow token */
   transition: border-color var(--duration) var(--ease);
 }
 
 @media (min-width: 768px) {
   .result-card {
-    padding: var(--space-6);
+  border-radius: 16px; /* Changed from pill shape to rectangular */
+  padding: var(--space-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+
+  transition: border-color var(--duration) var(--ease);
+
+  border-radius: 6px;
+  padding: var(--space-5); /* Ensure consistent spacing */
+  background: var(--surface);
+    padding: var(--space-6); /* Updated to design token */
   }
 }
 
@@ -1264,7 +1337,7 @@ main {
   align-items: center;
   padding: var(--space-1) var(--space-3);
   background: var(--color-bg);
-  border: 1px solid var(--color-border-subtle);
+  border: 1px solid var(--border); /* Update to unified border color */
   border-radius: 999px;
   font-size: var(--space-2);
   font-weight: 600;
@@ -1332,13 +1405,15 @@ main {
    ============================================ */
 
 .btn {
+  transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-5);
   border: none;
-  border-radius: var(--radius);
+  border-radius: var(--radius); /* Ensured reference to design token */
   font-family: inherit;
   font-size: var(--space-3);
   font-weight: 600;
@@ -1349,6 +1424,15 @@ main {
 }
 
 .btn-primary {
+  border-radius: 6px;
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-primary);
+  color: white;
+
+  border-radius: 6px;
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-primary);
+  color: white;
   background: var(--color-primary);
   color: white;
 }
@@ -1363,6 +1447,15 @@ main {
 }
 
 .btn-secondary {
+  border-radius: 6px;
+  padding: var(--space-3) var(--space-5);
+  color: var(--ink-secondary);
+  border: 1px solid var(--border-strong);
+
+  border-radius: 6px;
+  padding: var(--space-3) var(--space-5);
+  color: var(--color-ink-secondary);
+  border: 1px solid var(--color-border-strong);
   background: transparent;
   color: var(--color-ink-secondary);
   border: 1px solid var(--color-border-strong);
@@ -1397,7 +1490,7 @@ main {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-3);
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-6); /* Updated to token */ /* Ensure consistent spacing */
 }
 
 @media (min-width: 640px) {
@@ -1413,11 +1506,11 @@ main {
 }
 
 .analysis-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-subtle);
+  background: var(--surface); /* Updated to unified surface color */
+  border: 1px solid var(--border); /* Update to unified border color */
   border-radius: var(--radius-lg);
-  padding: var(--space-5);
-  box-shadow: none;
+  padding: var(--space-5); /* Ensure consistent spacing */
+  box-shadow: var(--shadow-none); /* Reference to shadow token */
   transition: border-color var(--duration) var(--ease);
 }
 
@@ -1463,11 +1556,11 @@ main {
 }
 
 .saved-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-subtle);
+  background: var(--surface); /* Updated to unified surface color */
+  border: 1px solid var(--border); /* Update to unified border color */
   border-radius: var(--radius-lg);
   padding: var(--space-4);
-  box-shadow: none;
+  box-shadow: var(--shadow-none); /* Reference to shadow token */
   transition: border-color var(--duration) var(--ease);
   display: flex;
   flex-direction: column;
@@ -1551,26 +1644,41 @@ main {
    ============================================ */
 
 .history-table-wrapper {
+  border-radius: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: var(--space-3);
+
   overflow-x: auto;
   border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border-subtle);
-  background: var(--color-surface);
+  border: 1px solid var(--border); /* Update to unified border color */
+  background: var(--surface); /* Updated to unified surface color */
 }
 
 .history-table {
+  border-radius: var(--radius); /* Ensured reference to design token */ /* Referring to design token */ /* no rounding for tables */
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--space-3);
+
   width: 100%;
   border-collapse: collapse;
   font-size: var(--space-3);
 }
 
 .history-table th,
+    padding: var(--space-4) var(--space-5);
 .history-table td {
+    padding: var(--space-4) var(--space-5);
   padding: var(--space-4) var(--space-5);
   text-align: left;
   border-bottom: 1px solid var(--color-border);
 }
 
 .history-table th {
+  background: var(--surface);
+  border: 1px solid var(--border);
+
   font-size: var(--space-2);
   font-weight: 600;
   text-transform: uppercase;
@@ -1598,6 +1706,10 @@ main {
    ============================================ */
 
 .footer {
+  transition: background var(--transition-fast);
+
+  border-radius: var(--radius); /* Ensured reference to design token */ /* Referring to design token */
+  padding: var(--space-8) 0;
   background: var(--surface);
   border-top: 1px solid var(--border);
   padding: var(--space-8) 0 var(--space-6);
@@ -1608,7 +1720,7 @@ main {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--space-6);
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-6); /* Updated to token */ /* Ensure consistent spacing */
 }
 
 @media (min-width: 640px) {
@@ -1824,10 +1936,13 @@ main {
 .mt-8 { margin-top: var(--space-8); }
 
 .mb-1 { margin-bottom: var(--space-1); }
+.mb-2 { margin-bottom: var(--spacin-top: var(--space-8); }
+
+.mb-1 { margin-bottom: var(--space-1); }
 .mb-2 { margin-bottom: var(--space-2); }
 .mb-3 { margin-bottom: var(--space-3); }
 .mb-4 { margin-bottom: var(--space-4); }
-.mb-6 { margin-bottom: var(--space-6); }
+.mb-6 { margin-bottom: var(--space-6); /* Updated to token */ /* Ensure consistent spacing */ }
 .mb-8 { margin-bottom: var(--space-8); }
 
 .gap-1 { gap: var(--space-1); }
@@ -1863,9 +1978,9 @@ main {
   bottom: 0;
   width: 100%;
   max-width: 400px;
-  background: var(--color-surface);
+  background: var(--surface); /* Updated to unified surface color */
   border-left: 1px solid var(--color-border);
-  padding: var(--space-6);
+  padding: var(--space-6); /* Updated to design token */
   transform: translateX(100%);
   transition: transform var(--duration) var(--ease);
   z-index: 2001;
@@ -1880,7 +1995,7 @@ main {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-6); /* Updated to token */ /* Ensure consistent spacing */
 }
 
 .settings-title {
@@ -1909,7 +2024,7 @@ main {
 }
 
 .settings-group {
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--space-6); /* Updated to token */ /* Ensure consistent spacing */
 }
 
 .settings-label {
@@ -1931,8 +2046,8 @@ main {
   flex: 1;
   padding: var(--space-3) var(--space-4);
   border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius);
-  background: var(--color-surface);
+  border-radius: var(--radius); /* Ensured reference to design token */
+  background: var(--surface); /* Updated to unified surface color */
   color: var(--color-ink-secondary);
   font-family: inherit;
   font-size: var(--space-3);

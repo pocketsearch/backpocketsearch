@@ -5,6 +5,7 @@ import os
 import re
 import sqlite3
 import socket
+import threading
 import time
 from datetime import datetime, timedelta
 from urllib.parse import urljoin, urlparse, parse_qs, quote_plus
@@ -168,15 +169,31 @@ def init_db():
     conn.commit()
     conn.close()
 
-
 _db_initialized = False
+_VACUUM_INTERVAL = int(os.environ.get("VACUUM_INTERVAL_HOURS", "1"))
+
+
+def _vacuum_scheduler():
+    while True:
+        time.sleep(_VACUUM_INTERVAL * 3600)
+        try:
+            _vacuum_if_needed()
+        except Exception as e:
+            logger.warning("Vacuum scheduler error: %s", e)
+
+
+def _start_vacuum_scheduler():
+    t = threading.Thread(target=_vacuum_scheduler, daemon=True)
+    t.start()
+    logger.info("Vacuum scheduler started (interval=%dh)", _VACUUM_INTERVAL)
+
 
 @app.before_request
 def _ensure_db():
     global _db_initialized
     if not _db_initialized:
         init_db()
-        _vacuum_if_needed()
+        _start_vacuum_scheduler()
         _db_initialized = True
 
 

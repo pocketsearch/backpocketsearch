@@ -220,6 +220,7 @@ class HowToProcessor:
                 step["step_title"] = self._simplify_to_highschool(step["step_title"], title=True)
         return steps
 
+
     def _simplify_to_child(self, text: str, title: bool = False) -> str:
         replacements = {
             "install": "put in", "configuration": "settings", "configured": "set up",

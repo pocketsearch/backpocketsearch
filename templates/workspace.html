@@ -1,6 +1,36 @@
 {% extends "base.html" %}
 {% block title %}Workspace — KitPocket{% endblock %}
 {% block content %}
+<script>
+  async function fetchRoadmaps() {
+    try {
+      const response = await fetch('/api/roadmaps');
+      if (!response.ok) throw new Error('Network response was not ok');
+      const roadmaps = await response.json();
+      const workspaceGrid = document.querySelector('.workspace-grid');
+
+      if (roadmaps.length) {
+        roadmaps.forEach(it => {
+          const tile = document.createElement('a');
+          tile.href = it.url ? it.url : '#';
+          tile.className = 'workspace-tile';
+          tile.title = it.title;
+          tile.innerHTML = `
+            <div class='tile-title'>${it.title}</div>
+            <div class='tile-sub'>${it.description || 'No description'}</div>
+          `;
+          workspaceGrid.appendChild(tile);
+        });
+      } else {
+        workspaceGrid.innerHTML = '<p>No roadmaps available.</p>';
+      }
+    } catch (error) {
+      console.error('Error fetching roadmaps:', error);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', fetchRoadmaps);
+</script>
 <div style="margin-bottom: var(--space-8);">
   <a href="{{ url_for('index') }}" class="back-link">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>

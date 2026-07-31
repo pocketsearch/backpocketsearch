@@ -31,6 +31,6 @@
 }
 
 :root {
-  --font-display: 'General Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, monospace;
+  --font-display: 'Geist', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif; /* Updated to use Geist as primary font */
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Cascadia Code', monospace; /* Updated font stack */
 }
