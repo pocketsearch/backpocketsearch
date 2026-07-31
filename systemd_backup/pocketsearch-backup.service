@@ -1,0 +1,7 @@
+[Unit]
+Description=PocketSearch Daily Database Backup
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/pocketsearch-backup
+User=hore

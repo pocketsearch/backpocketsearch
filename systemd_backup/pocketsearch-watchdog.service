@@ -1,0 +1,13 @@
+[Unit]
+Description=PocketSearch HTTP 500 Crash Watchdog
+After=pocketsearch.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/pocketsearch-watchdog
+Restart=always
+RestartSec=2
+User=root
+
+[Install]
+WantedBy=multi-user.target

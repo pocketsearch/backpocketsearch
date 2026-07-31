@@ -1,0 +1,11 @@
+[Unit]
+Description=Clean up old PocketSearch session logs
+After=network.target
+
+[Service]
+Type=oneshot
+User=hore
+ExecStart=/usr/bin/find /home/hore/pocketSearch/ -name "*.log" -type f -mtime +7 -delete
+
+[Install]
+WantedBy=multi-user.target
