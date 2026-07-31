@@ -413,7 +413,7 @@ def go():
                 data["url"], data["title"], data["description"], data["status_code"],
                 data["response_ms"], data["word_count"], data["link_count"],
                 data["image_count"], "\n".join(data["headings"]), "\n".join(data["links"]),
-                "\n".join(data["images"]), datetime.now(datetime.UTC).isoformat(timespec="seconds"),
+                "\n".join(data["images"]), datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
             ),
         )
         db.commit()
@@ -475,7 +475,7 @@ def go():
     cur = db.execute(
         "INSERT INTO searches (query, result_count, response_ms, results, created_at) VALUES (?,?,?,?,?)",
         (query, len(merged), total_ms, json.dumps(merged),
-         datetime.now(datetime.UTC).isoformat(timespec="seconds")),
+         datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")),
     )
     db.commit()
     session["last_analysis"] = analysis
@@ -555,7 +555,7 @@ def recon():
     url = raw.strip() if raw.strip().startswith(("http://", "https://")) else f"https://{domain}"
 
     db = get_db()
-    now = datetime.now(datetime.UTC)
+    now = datetime.now(datetime.timezone.utc)
     row = db.execute(
         "SELECT id, data, created_at FROM recons WHERE domain = ? ORDER BY id DESC LIMIT 1",
         (domain,),
@@ -717,7 +717,7 @@ def save_item():
     db = get_db()
     cur = db.execute(
         "INSERT INTO saved_items (query, item_json, note, created_at) VALUES (?,?,?,?)",
-        (query, item_json, note, datetime.now(datetime.UTC).isoformat(timespec="seconds")),
+        (query, item_json, note, datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")),
     )
     db.commit()
     item_id = cur.lastrowid
@@ -796,7 +796,7 @@ def theme():
 
 def _cleanup_old_records():
     try:
-        cutoff = datetime.now(datetime.UTC) - timedelta(days=int(os.environ.get("HISTORY_DAYS", "30")))
+        cutoff = datetime.now(datetime.timezone.utc) - timedelta(days=int(os.environ.get("HISTORY_DAYS", "30")))
         conn = sqlite3.connect(DB_PATH)
         conn.execute("DELETE FROM scrapes WHERE created_at < ?", (cutoff.isoformat(timespec="seconds"),))
         conn.execute("DELETE FROM searches WHERE created_at < ?", (cutoff.isoformat(timespec="seconds"),))
