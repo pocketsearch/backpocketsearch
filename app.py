@@ -615,24 +615,42 @@ def history():
     return render_template("history.html", rows=rows[:100])
 
 
+_theme_cache = {}
+_theme_cache_time = 0
+_THEME_CACHE_TTL = 60
+
+
 @app.context_processor
 def inject_theme():
+    global _theme_cache, _theme_cache_time
+    now = time.time()
+    if _theme_cache and now - _theme_cache_time < _THEME_CACHE_TTL:
+        return {
+            "theme": request.cookies.get("theme", "light"),
+            "statusbar": _theme_cache,
+        }
+
     db = get_db()
     search_count = db.execute("SELECT COUNT(*) as c FROM searches").fetchone()["c"]
     saved_count = db.execute("SELECT COUNT(*) as c FROM saved_items").fetchone()["c"]
     entity_count = 0
     try:
-        entity_count = knowledgelib._memory_storage.get_entities(limit=1)
-        entity_count = len(knowledgelib._memory_storage.get_entities(limit=1000000))
+        conn = sqlite3.connect("pocketsearch_memory.db")
+        entity_count = conn.execute("SELECT COUNT(*) as c FROM entities").fetchone()["c"]
+        conn.close()
     except Exception:
         pass
+
+    _theme_cache = {
+        "search_count": search_count,
+        "saved_count": saved_count,
+        "entity_count": entity_count,
+    }
+    _theme_cache_time = now
+
     return {
         "theme": request.cookies.get("theme", "light"),
-        "statusbar": {
-            "search_count": search_count,
-            "saved_count": saved_count,
-            "entity_count": entity_count,
-        }
+        "statusbar": _theme_cache,
     }
 
 
