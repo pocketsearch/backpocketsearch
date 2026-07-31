@@ -25,7 +25,13 @@ except Exception:
     pass
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "change-this-secret-key")
+secret_key = os.environ.get("SECRET_KEY")
+if not secret_key:
+    raise RuntimeError(
+        "SECRET_KEY environment variable must be set. "
+        "Generate one with: python -c 'import secrets; print(secrets.token_hex(32))'"
+    )
+app.secret_key = secret_key
 DB_PATH = os.environ.get("DB_PATH", "webscope.db")
 UA = "Mozilla/5.0 (compatible; WebScope/1.0)"
 TIMEOUT = int(os.environ.get("TIMEOUT", "8"))
