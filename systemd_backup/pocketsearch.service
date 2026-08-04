@@ -1,12 +1,13 @@
 [Unit]
-Description=Backpocketsearch Flask Application
+Description=PocketSearch Flask Application
 After=network.target
 
 [Service]
 User=hore
 WorkingDirectory=/home/hore/pocketSearch
 EnvironmentFile=/home/hore/pocketSearch/.env
-ExecStart=/usr/bin/gunicorn --workers 3 -k gevent --access-logfile /home/hore/pocketSearch/access.log --access-logformat "%\({X-Real-IP\}i)s %\({X-Forwarded-For\}i)s %\({Host\}i)s %\(t)s \"%\(r)s\" %\(s)s %\(b)s %\(L)s" --timeout 300 --bind 127.0.0.1:5000 app:app
+ExecStart=/usr/bin/gunicorn --workers 3 -k gevent --access-logfile /home/hore/pocketSearch/access.log --access-logformat "%({X-Real-IP}i)s %({X-Forwarded-For}i)s %({Host}i)s %(t)s \"%(r)s\" %(s)s %(b)s %(L)s" --timeout 300 --bind 127.0.0.1:5000 app:app
+ExecStopPost=/usr/local/bin/pocketsearch-notify
 Restart=always
 RestartSec=5
 StandardOutput=journal
@@ -14,6 +15,3 @@ StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
-
-[Service]
-ExecStopPost=/usr/local/bin/pocketsearch-notify
