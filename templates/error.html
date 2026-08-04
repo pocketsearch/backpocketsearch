@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Error — KitPocket{% endblock %}
+{% block content %}
+<div class="card" style="text-align: center; padding: var(--space-12); max-width: 560px; margin-inline: auto;">
+  <div class="logo-splash" aria-hidden="true" style="width: 64px; height: 64px;">
+    {% from '_logo_macro.html' import logo %}
+    {{ logo(48, 'brand-logo') }}
+  </div>
+  <h2 style="margin-top: var(--space-4);">{{ title or "Something went wrong" }}</h2>
+  <p style="color: var(--ink-muted); margin-top: var(--space-3);">
+    {{ message or "The request couldn't be completed. This has been logged." }}
+  </p>
+  <a href="{{ url_for('index') }}" class="btn btn-primary" style="margin-top: var(--space-6); display: inline-flex;">
+    Back to search
+  </a>
+</div>
+{% endblock %}

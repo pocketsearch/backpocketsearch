@@ -7,7 +7,7 @@ import sqlite3
 import socket
 import threading
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from urllib.parse import urljoin, urlparse, parse_qs, quote_plus
 
 import requests
@@ -17,6 +17,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_excep
 
 import recon as reconlib
 import knowledge as knowledgelib
+from pass_search import classify_intent, run_search
 from knowledge import record_search, get_recommendations, auto_tag, rank_results, rewrite_query, get_recent_queries
 
 try:
@@ -377,111 +378,194 @@ def web_search(query, max_results=15):
 
 @app.route("/")
 def index():
-    recommendations = get_recommendations(limit=6)
-    recent = get_recent_queries(limit=5)
-    return render_template("index.html", recommendations=recommendations, recent_queries=recent)
-
+    return render_template("index.html")
 
 @app.route("/go", methods=["POST"])
 def go():
-    raw = request.form.get("query", "")
-    if not raw.strip():
-        flash("Type a URL or a search query.")
+    raw = request.form.get("query", "").strip()
+
+    if not raw:
+        flash("Enter a search query.")
         return redirect(url_for("index"))
 
-    if looks_like_url(raw):
-        url = normalize_url(raw)
-        if not url:
-            flash("That doesn't look like a valid URL.")
-            return redirect(url_for("index"))
-        try:
-            data = scrape(url)
-        except requests.exceptions.RequestException as e:
-            flash(f"Could not fetch that URL: {e}")
-            return redirect(url_for("index"))
-        except ValueError as e:
-            flash(str(e))
+    requested_mode = request.form.get("mode", "auto").strip().lower()
+    intent = classify_intent(raw, requested_mode)
+
+    logger.info(
+        "classification query=%r assigned_intent=%s requested_mode=%s",
+        raw,
+        intent,
+        requested_mode,
+    )
+
+    # DOMAIN intent has a completely isolated fetch path.
+    # No DuckDuckGo/general knowledge calls are made.
+    if intent == "domain":
+        domain = reconlib.domain_from_url(raw)
+
+        if not domain:
+            flash("That doesn't look like a valid domain.")
             return redirect(url_for("index"))
 
+        url = (
+            raw
+            if raw.startswith(("http://", "https://"))
+            else f"https://{domain}"
+        )
+
         db = get_db()
+        now = datetime.now(timezone.utc)
+
+        cached = db.execute(
+            """SELECT id, data, created_at
+               FROM recons
+               WHERE domain = ?
+               ORDER BY id DESC
+               LIMIT 1""",
+            (domain,),
+        ).fetchone()
+
+        if cached:
+            try:
+                created = datetime.fromisoformat(cached["created_at"])
+                if now - created < RECON_CACHE_TTL:
+                    logger.info(
+                        "domain intent cached query=%r domain=%s recon_id=%s",
+                        raw,
+                        domain,
+                        cached["id"],
+                    )
+                    return redirect(
+                        url_for(
+                            "recon_result",
+                            recon_id=cached["id"],
+                        )
+                    )
+            except Exception:
+                pass
+
+        page_headers = {}
+        page_html = ""
+
+        # Fetching the target page is only for allowed domain secondary
+        # data: headers, robots/sitemap support and fingerprint context.
+        try:
+            page = safe_get(url)
+            body = _stream_body(page)
+            page_headers = dict(page.headers)
+            page_html = body.decode(
+                page.encoding or "utf-8",
+                errors="replace",
+            )
+            page.close()
+        except Exception as exc:
+            logger.info(
+                "domain page metadata unavailable domain=%s error=%s",
+                domain,
+                exc,
+            )
+
+        from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
+        try:
+            with ThreadPoolExecutor(max_workers=1) as _executor:
+                _future = _executor.submit(
+                    reconlib.run_full_recon,
+                    url,
+                    domain,
+                    page_headers,
+                    page_html,
+                )
+                data = _future.result(timeout=20)
+        except FutureTimeoutError:
+            logger.warning(
+                "recon timed out domain=%s — returning partial/empty result",
+                domain,
+            )
+            data = {
+                "error": "Recon timed out (one or more external sources took too long).",
+                "partial": True,
+            }
+        except Exception as exc:
+            logger.warning(
+                "recon failed domain=%s error=%s",
+                domain,
+                exc,
+            )
+            data = {
+                "error": f"Recon failed: {exc}",
+                "partial": True,
+            }
+
         cur = db.execute(
-            """INSERT INTO scrapes
-               (url, title, description, status_code, response_ms, word_count,
-                link_count, image_count, headings, links, images, created_at)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+            "INSERT INTO recons (domain, data, created_at) VALUES (?,?,?)",
             (
-                data["url"], data["title"], data["description"], data["status_code"],
-                data["response_ms"], data["word_count"], data["link_count"],
-                data["image_count"], "\n".join(data["headings"]), "\n".join(data["links"]),
-                "\n".join(data["images"]), datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
+                domain,
+                json.dumps(data),
+                now.isoformat(timespec="seconds"),
             ),
         )
         db.commit()
-        return redirect(url_for("result", scrape_id=cur.lastrowid))
 
-    query = raw.strip()
+        return redirect(
+            url_for(
+                "recon_result",
+                recon_id=cur.lastrowid,
+            )
+        )
+
+    query = raw
+
     record_search(query)
     knowledgelib._interest_learner.record_from_query(query)
-    rewritten_query = rewrite_query(query)
 
-    web_results = []
-    web_ms = 0
-    try:
-        web_results, web_ms = web_search(rewritten_query)
-    except requests.exceptions.RequestException as e:
-        logger.warning("Web search failed for %r: %s", rewritten_query, e)
+    # Do not rewrite explicit domain/person/code semantics.
+    if intent == "general":
+        rewritten_query = rewrite_query(query)
+    else:
+        rewritten_query = query
 
-    enriched_data = knowledgelib.enrich_query(rewritten_query)
-    enriched = enriched_data.get("results", [])
-    analysis = enriched_data.get("analysis", {})
-    enriched_map = {item["url"]: item for item in enriched if item.get("url")}
+    results, analysis, elapsed_ms = run_search(
+        rewritten_query,
+        intent,
+        web_search,
+        rank_results,
+    )
 
-    web_map = {item["url"]: item for item in web_results if item.get("url")}
-    seen = set()
-    merged = []
+    # General is strictly top 8 after ranking.
+    if intent == "general":
+        results = results[:8]
 
-    for item in enriched:
-        url = item.get("url", "")
-        if url and url not in seen:
-            seen.add(url)
-            merged.append(item)
-
-    for item in web_results:
-        url = item.get("url", "")
-        if url and url not in seen:
-            seen.add(url)
-            merged.append(item)
-
-    merged = rank_results(merged, rewritten_query)
-
-    knowledgelib._knowledge_graph.link_query_entities(query)
-    knowledgelib._auto_collections.build_collections()
-
-    # Never allow empty results — fallback is already injected by enrich_query,
-    # but if somehow merged is still empty, synthesize a final fallback.
-    if not merged:
-        merged = [{
-            "source": "WebScope",
-            "type": "fallback",
-            "title": f'No direct results for "{query}"',
-            "url": f"https://www.google.com/search?q={quote_plus(query)}",
-            "snippet": "Try broadening your query or checking spelling. External knowledge sources may be temporarily unavailable.",
-            "meta": "fallback",
-        }]
-
-    total_ms = web_ms
+    # Cross-cutting: no unrelated fallback synthesis.
+    # Empty means empty rather than silently violating allowlists.
+    result_count = len(results)
 
     db = get_db()
-    cur = db.execute(
-        "INSERT INTO searches (query, result_count, response_ms, results, created_at) VALUES (?,?,?,?,?)",
-        (query, len(merged), total_ms, json.dumps(merged),
-         datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")),
-    )
-    db.commit()
-    session["last_analysis"] = analysis
-    session.modified = True
-    return redirect(url_for("search_result", search_id=cur.lastrowid))
 
+    cur = db.execute(
+        """INSERT INTO searches
+           (query, result_count, response_ms, results, created_at)
+           VALUES (?,?,?,?,?)""",
+        (
+            query,
+            result_count,
+            elapsed_ms,
+            json.dumps(results),
+            datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        ),
+    )
+
+    db.commit()
+
+    session["last_analysis"] = analysis
+    session["last_search_intent"] = intent
+    session.modified = True
+
+    return redirect(
+        url_for(
+            "search_result",
+            search_id=cur.lastrowid,
+        )
+    )
 
 @app.route("/result/<int:scrape_id>")
 def result(scrape_id):
@@ -530,6 +614,10 @@ def search_result(search_id):
     if not analysis:
         analysis = session.get("last_analysis", {})
     record["analysis"] = analysis
+    record["intent"] = analysis.get(
+        "intent",
+        session.get("last_search_intent", "general"),
+    )
 
     saved_count = 0
     try:
@@ -555,7 +643,7 @@ def recon():
     url = raw.strip() if raw.strip().startswith(("http://", "https://")) else f"https://{domain}"
 
     db = get_db()
-    now = datetime.now(datetime.timezone.utc)
+    now = datetime.now(timezone.utc)
     row = db.execute(
         "SELECT id, data, created_at FROM recons WHERE domain = ? ORDER BY id DESC LIMIT 1",
         (domain,),
@@ -717,7 +805,7 @@ def save_item():
     db = get_db()
     cur = db.execute(
         "INSERT INTO saved_items (query, item_json, note, created_at) VALUES (?,?,?,?)",
-        (query, item_json, note, datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")),
+        (query, item_json, note, datetime.now(timezone.utc).isoformat(timespec="seconds")),
     )
     db.commit()
     item_id = cur.lastrowid
@@ -794,9 +882,28 @@ def theme():
     return resp
 
 
+@app.errorhandler(500)
+def handle_500(e):
+    logger.exception("Unhandled server error")
+    return render_template(
+        "error.html",
+        title="Something went wrong",
+        message="An unexpected error occurred while processing your request. Try again, or start a new search.",
+    ), 500
+
+
+@app.errorhandler(404)
+def handle_404(e):
+    return render_template(
+        "error.html",
+        title="Not found",
+        message="That page or resource doesn't exist.",
+    ), 404
+
+
 def _cleanup_old_records():
     try:
-        cutoff = datetime.now(datetime.timezone.utc) - timedelta(days=int(os.environ.get("HISTORY_DAYS", "30")))
+        cutoff = datetime.now(timezone.utc) - timedelta(days=int(os.environ.get("HISTORY_DAYS", "30")))
         conn = sqlite3.connect(DB_PATH)
         conn.execute("DELETE FROM scrapes WHERE created_at < ?", (cutoff.isoformat(timespec="seconds"),))
         conn.execute("DELETE FROM searches WHERE created_at < ?", (cutoff.isoformat(timespec="seconds"),))

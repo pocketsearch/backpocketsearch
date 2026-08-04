@@ -11,16 +11,17 @@
 </div>
 
 <div class="dashboard-grid" style="margin-bottom: var(--space-8);">
-  <div class="analysis-card" style="border-left: 3px solid {% if rec.data.security_headers.grade == 'A' %}#22C55E{% elif rec.data.security_headers.grade == 'B' %}#84CC16{% elif rec.data.security_headers.grade == 'C' %}#F59E0B{% else %}#EF4444{% endif %};">
+  {% set grade_class = {'A': 'grade-a', 'B': 'grade-b', 'C': 'grade-c'}.get(rec.data.security_headers.grade, 'grade-d') %}
+  <div class="analysis-card {{ grade_class }}">
     <div class="analysis-card-title">Security Headers</div>
     <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4);">
-      <span style="display: inline-flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border-radius: 50%; font-weight: 700; font-size: 1rem; color: #fff; background: {% if rec.data.security_headers.grade == 'A' %}#22C55E{% elif rec.data.security_headers.grade == 'B' %}#84CC16{% elif rec.data.security_headers.grade == 'C' %}#F59E0B{% else %}#EF4444{% endif %};">{{ rec.data.security_headers.grade }}</span>
+      <span class="grade-badge {{ grade_class }}">{{ rec.data.security_headers.grade }}</span>
       <span style="font-size: var(--space-3); color: var(--ink-muted);">{{ rec.data.security_headers.found }}/{{ rec.data.security_headers.total }} present</span>
     </div>
     <div style="display: flex; flex-direction: column; gap: var(--space-2);">
       {% for header, value in rec.data.security_headers.headers.items() %}
       <div style="display: flex; align-items: center; gap: var(--space-2); font-size: var(--space-3);">
-        <span style="color: {% if value %}#22C55E{% else %}#EF4444{% endif %}; font-weight: 600;">{{ "✓" if value else "✗" }}</span>
+        <span class="{{ 'header-check-ok' if value else 'header-check-fail' }}">{{ "check" if value else "x" }}</span>
         <span style="color: var(--ink-muted);">{{ header }}</span>
       </div>
       {% endfor %}

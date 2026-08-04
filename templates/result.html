@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 {% block title %}Result — {{ r.title or r.url }}{% endblock %}
 {% block content %}
-<div style="margin-bottom: var(--space-8);">
+<div class="result-page-header">
   <a href="{{ url_for('index') }}" class="back-link">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
     New search
   </a>
-  <h1 class="section-title" style="margin-bottom: var(--space-2); font-weight:600; font-size:1.15rem;">{{ r.title or "(no title)" }}</h1>
-  <p style="font-size: 0.9rem; color: var(--ink-muted); word-break: break-all; margin-bottom: var(--space-3); font-family: var(--font-mono); font-weight:400;">{{ r.url }}</p>
-  {% if r.description %}<p style="color: var(--ink-muted); line-height: 1.7; margin-bottom: var(--space-6); font-size: 0.95rem;">{{ r.description }}</p>{% endif %}
+  <h1 class="section-title result-page-title">{{ r.title or "(no title)" }}</h1>
+  <p class="result-page-url">{{ r.url }}</p>
+  {% if r.description %}<p class="result-page-desc">{{ r.description }}</p>{% endif %}
 
   <form action="{{ url_for('recon') }}" method="post" id="reconForm" style="margin-bottom: var(--space-6);">
     <input type="hidden" name="target" value="{{ r.url }}">
@@ -20,7 +20,7 @@
 
 {# Summary sentence #}
 {% if r.response_ms is defined and r.word_count is defined and r.link_count is defined %}
-<p class="summary-line" style="color: var(--ink-muted); font-family: var(--font-body); font-size: 0.95rem; margin-bottom: var(--space-4);">Responded in {{ r.response_ms }} ms with {{ r.word_count }} words and {{ r.link_count }} links indexed.</p>
+<p class="summary-line summary-line-text">Responded in {{ r.response_ms }} ms with {{ r.word_count }} words and {{ r.link_count }} links indexed.</p>
 {% endif %}
 
 {# Metrics grid #}
@@ -33,9 +33,9 @@
     <div class="metric-label">Status</div>
     <div class="metric-number {% if r.status_code >=200 and r.status_code <300 %}status-ok{% elif r.status_code >=400 %}status-err{% endif %}">
       {% if is_error and r.error %}
-        <span class="metric-error" style="font-family:var(--font-mono); color:var(--ink-muted);">{{ r.error }}</span>
+        <span class="metric-error">{{ r.error }}</span>
       {% elif is_error and not r.status_code %}
-        <span class="metric-error" style="font-family:var(--font-mono); color:var(--ink-muted);">No response</span>
+        <span class="metric-error">No response</span>
       {% else %}
         {{ r.status_code }}
       {% endif %}
@@ -45,8 +45,8 @@
   {% if not is_error %}
   <div class="metric metric--response metric--large" style="animation-delay: 40ms;">
     <div class="metric-label">Response</div>
-    <div class="metric-number">{{ r.response_ms }} <span style="font-size:0.9rem; font-weight:500; color:var(--ink);">ms</span></div>
-    <div class="metric-sub" style="font-family:var(--font-mono); font-size:0.7rem; color:var(--ink-muted); margin-top:6px;">
+    <div class="metric-number">{{ r.response_ms }} <span class="metric-response-unit">ms</span></div>
+    <div class="metric-sub metric-response-note">
       {% if r.response_ms < 300 %}fast{% elif r.response_ms <= 1000 %}typical{% else %}slow{% endif %}
     </div>
   </div>
@@ -75,109 +75,45 @@ document.addEventListener('DOMContentLoaded', function(){
   var form = document.getElementById('reconForm');
   var btn = document.getElementById('reconBtn');
   if (!form || !btn) return;
+
   form.addEventListener('submit', function(e){
     e.preventDefault();
-    // show skeleton placeholders while request is in flight
+
     var grid = document.querySelector('.metrics-grid');
     if (grid) {
       grid.innerHTML = '';
-      for (var i=0;i<4;i++){
+      for (var i = 0; i < 4; i++){
         var s = document.createElement('div');
         s.className = 'metric skeleton';
-        s.style.animationDelay = (i*40)+'ms';
+        s.style.animationDelay = (i * 40) + 'ms';
         grid.appendChild(s);
       }
     }
+
     btn.disabled = true;
     btn.textContent = 'Running...';
-    var spinner = document.createElement('span');
-    spinner.className = 'btn-spinner';
-    spinner.innerHTML = logo_svg_inner();
-    btn.prepend(spinner);
-    // add spin class
-    spinner.querySelector('.rotate-ring')?.classList.add('active-spin');
 
-    // submit via fetch and follow redirect
     var fd = new FormData(form);
     fetch(form.action, { method: 'POST', body: fd, credentials: 'same-origin', redirect: 'follow' })
       .then(function(resp){
-        // when server redirects to recon result, navigate there
         window.location = resp.url || '/';
-      }).catch(function(err){
+      })
+      .catch(function(err){
         console.error('Recon request failed', err);
         btn.disabled = false;
         btn.textContent = 'Run deep recon on this domain';
         alert('Recon failed: ' + (err.message || err));
       });
   });
-    // show skeleton placeholders while request is in flight
-    var grid = document.querySelector('.metrics-grid');
-    if (grid) {
-      grid.innerHTML = '';
-      for (var i=0;i<4;i++){
-        var s = document.createElement('div');
-        s.className = 'metric skeleton';
-        s.style.animationDelay = (i*40)+'ms';
-        grid.appendChild(s);
-      }
-    }
-    btn.disabled = true;
-    btn.textContent = 'Running...';
-    // insert small spinning logo
-    var spinner = document.createElement('span');
-    spinner.className = 'btn-spinner';
-    spinner.innerHTML = `{% from '_logo_macro.html' import logo %}{{ logo(36, 'brand-logo') }}`;
-    btn.prepend(spinner);
-    // add spin class
-    spinner.querySelector('.rotate-ring')?.classList.add('active-spin');
-    // allow form to submit normally
-  });
 });
-
-function logo_svg_inner(){ return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-hidden="false" focusable="false" class="logo-svg">
-  <title>PocketSearch</title>
-  <g fill="currentColor" stroke="none">
-    <!-- axes: evenly spaced dots along vertical and horizontal lines -->
-    <g class="axes">
-      <!-- horizontal axis -->
-      <circle cx="8" cy="32" r="2" />
-      <circle cx="22" cy="32" r="2" />
-      <circle cx="36" cy="32" r="2" />
-      <circle cx="50" cy="32" r="2" />
-      <!-- vertical axis -->
-      <circle cx="32" cy="8" r="2" />
-      <circle cx="32" cy="22" r="2" />
-      <circle cx="32" cy="36" r="2" />
-      <circle cx="32" cy="50" r="2" />
-    </g>
-
-    <!-- radial ring (rotates) -->
-    <g class="radial-ring rotate-ring" style="opacity:0.4">
-      <circle cx="32" cy="4" r="1.8" />
-      <circle cx="46.5" cy="10.5" r="1.8" />
-      <circle cx="56" cy="24" r="1.8" />
-      <circle cx="56" cy="40" r="1.8" />
-      <circle cx="46.5" cy="53.5" r="1.8" />
-      <circle cx="32" cy="60" r="1.8" />
-      <circle cx="17.5" cy="53.5" r="1.8" />
-      <circle cx="8" cy="40" r="1.8" />
-      <circle cx="8" cy="24" r="1.8" />
-      <circle cx="17.5" cy="10.5" r="1.8" />
-    </g>
-
-    <!-- center solid origin -->
-    <circle cx="32" cy="32" r="3" />
-  </g>
-</svg>`; }
-
 </script>
 
 {% if r.headings %}
 <div class="analysis-card" style="margin-bottom: var(--space-6);">
   <div class="analysis-card-title">Headings</div>
-  <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--space-2);">
+  <ul class="result-list">
     {% for h in r.headings %}
-    <li style="font-size: var(--space-3); padding: var(--space-2) 0; border-bottom: 1px solid var(--border);">{{ h }}</li>
+    <li class="result-heading-item">{{ h }}</li>
     {% endfor %}
   </ul>
 </div>
@@ -187,9 +123,9 @@ function logo_svg_inner(){ return `<svg xmlns="http://www.w3.org/2000/svg" viewB
   {% if r.links %}
   <div class="analysis-card">
     <div class="analysis-card-title">Links ({{ r.link_count }})</div>
-    <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--space-2); max-height: 400px; overflow-y: auto;">
+    <ul class="result-list result-linklist">
       {% for l in r.links %}
-      <li><a href="{{ l }}" target="_blank" rel="noopener" style="font-size: var(--space-3); color: var(--ink-muted); word-break: break-all; text-decoration: none;">{{ l }}</a></li>
+      <li><a href="{{ l }}" target="_blank" rel="noopener" class="result-linklist-item">{{ l }}</a></li>
       {% endfor %}
     </ul>
   </div>
@@ -198,9 +134,9 @@ function logo_svg_inner(){ return `<svg xmlns="http://www.w3.org/2000/svg" viewB
   {% if r.images %}
   <div class="analysis-card">
     <div class="analysis-card-title">Images ({{ r.image_count }})</div>
-    <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--space-2); max-height: 400px; overflow-y: auto;">
+    <ul class="result-list result-linklist">
       {% for i in r.images %}
-      <li><a href="{{ i }}" target="_blank" rel="noopener" style="font-size: var(--space-3); color: var(--ink-muted); word-break: break-all; text-decoration: none;">{{ i }}</a></li>
+      <li><a href="{{ i }}" target="_blank" rel="noopener" class="result-linklist-item">{{ i }}</a></li>
       {% endfor %}
     </ul>
   </div>

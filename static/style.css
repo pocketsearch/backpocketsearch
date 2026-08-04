@@ -436,7 +436,6 @@ a:hover { color: var(--color-ink); }
     align-self: flex-end;
   }
 }
-}
 
 @media (min-width: 1024px) {
   .container {
@@ -866,19 +865,14 @@ main {
 }
 
 .search-box {
-  border-radius: 6px;
-  padding: var(--space-3);
-  background: var(--surface);
-  border: 1px solid var(--border);
-
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-4) var(--space-5); /* Updated to design token */
+  padding: var(--space-4) var(--space-5);
   height: 56px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius); /* Ensured reference to design token */
+  border-radius: var(--radius);
   transition: border-color var(--transition-fast), background 150ms ease;
 }
 
@@ -897,16 +891,6 @@ main {
 }
 
 .search-box-input {
-  border-radius: 6px;
-  padding: var(--space-3);
-  background: var(--surface);
-  border: 1px solid var(--border);
-
-  border-radius: 6px;
-  padding: var(--space-3);
-  background: var(--surface);
-  border: 1px solid var(--border);
-
   flex: 1;
   border: none;
   background: transparent;
@@ -1175,16 +1159,11 @@ main {
 }
 
 .recon-input {
-  border-radius: 6px;
-  padding: var(--space-3);
-  background: var(--surface);
-  border: 1px solid var(--border);
-
   flex: 1;
   height: 48px;
   padding: 0 var(--space-4);
   border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius); /* Ensured reference to design token */
+  border-radius: var(--radius);
   background: var(--color-bg);
   font-family: inherit;
   font-size: var(--space-3);
@@ -1286,37 +1265,17 @@ main {
 }
 
 .result-card {
-  border-radius: 16px; /* Changed from pill shape to rectangular */
-  padding: var(--space-5);
   background: var(--surface);
   border: 1px solid var(--border);
-
-  transition: border-color var(--duration) var(--ease);
-
-  border-radius: 6px;
-  padding: var(--space-5); /* Ensure consistent spacing */
-  background: var(--surface);
-  background: var(--surface); /* Updated to unified surface color */
-  border: 1px solid var(--border); /* Update to unified border color */
   border-radius: var(--radius-lg);
-  padding: var(--space-5); /* Ensure consistent spacing */
-  box-shadow: var(--shadow-none); /* Reference to shadow token */
+  padding: var(--space-5);
+  box-shadow: var(--shadow-none);
   transition: border-color var(--duration) var(--ease);
 }
 
 @media (min-width: 768px) {
   .result-card {
-  border-radius: 16px; /* Changed from pill shape to rectangular */
-  padding: var(--space-5);
-  background: var(--surface);
-  border: 1px solid var(--border);
-
-  transition: border-color var(--duration) var(--ease);
-
-  border-radius: 6px;
-  padding: var(--space-5); /* Ensure consistent spacing */
-  background: var(--surface);
-    padding: var(--space-6); /* Updated to design token */
+    padding: var(--space-6);
   }
 }
 
@@ -1428,13 +1387,6 @@ main {
   padding: var(--space-3) var(--space-5);
   background: var(--color-primary);
   color: white;
-
-  border-radius: 6px;
-  padding: var(--space-3) var(--space-5);
-  background: var(--color-primary);
-  color: white;
-  background: var(--color-primary);
-  color: white;
 }
 
 .btn-primary:hover {
@@ -1449,13 +1401,6 @@ main {
 .btn-secondary {
   border-radius: 6px;
   padding: var(--space-3) var(--space-5);
-  color: var(--ink-secondary);
-  border: 1px solid var(--border-strong);
-
-  border-radius: 6px;
-  padding: var(--space-3) var(--space-5);
-  color: var(--color-ink-secondary);
-  border: 1px solid var(--color-border-strong);
   background: transparent;
   color: var(--color-ink-secondary);
   border: 1px solid var(--color-border-strong);
@@ -1936,7 +1881,6 @@ main {
 .mt-8 { margin-top: var(--space-8); }
 
 .mb-1 { margin-bottom: var(--space-1); }
-.mb-2 { margin-bottom: var(--spacin-top: var(--space-8); }
 
 .mb-1 { margin-bottom: var(--space-1); }
 .mb-2 { margin-bottom: var(--space-2); }
@@ -2069,3 +2013,274 @@ main {
   font-weight: 600;
 }
 
+
+
+/* ============================================================
+   PASS HOMEPAGE — SETTINGS DRAWER POLISH
+   ============================================================ */
+
+.pass-home {
+    position: relative;
+}
+
+.pass-shell {
+    position: relative;
+    z-index: 1;
+}
+
+/*
+ * Drawer and gear are overlays. They never participate in
+ * document layout, so opening settings cannot shift search.
+ */
+
+#settingsDrawer,
+#settingsToggle,
+#settingsBackdrop {
+    font-family: var(--font-sans);
+}
+
+/*
+ * Maintain monochrome treatment regardless of selected palette.
+ * Accent preferences still work elsewhere in the application.
+ */
+
+#settingsDrawer {
+    color: #f3f3f3;
+}
+
+/*
+ * At desktop dimensions keep search visually left of an open
+ * drawer without actually changing its normal centered position.
+ */
+
+@media (min-width: 1100px) {
+    body.settings-open .pass-shell {
+        transform: translateX(-9vw);
+        transition: transform 180ms cubic-bezier(.2,.8,.2,1);
+    }
+
+    body:not(.settings-open) .pass-shell {
+        transform: translateX(0);
+        transition: transform 180ms cubic-bezier(.2,.8,.2,1);
+    }
+}
+
+@media (max-width: 1099px) {
+    .pass-shell {
+        transform: none !important;
+    }
+}
+
+/* ============================================
+   GRADE / STATUS COLORS (recon security headers)
+   ============================================ */
+:root {
+  --grade-a: #22C55E;
+  --grade-b: #84CC16;
+  --grade-c: #F59E0B;
+  --grade-d: #EF4444;
+}
+
+.grade-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #fff;
+}
+.grade-badge.grade-a { background: var(--grade-a); }
+.grade-badge.grade-b { background: var(--grade-b); }
+.grade-badge.grade-c { background: var(--grade-c); }
+.grade-badge.grade-d { background: var(--grade-d); }
+
+.analysis-card.grade-a { border-left: 3px solid var(--grade-a); }
+.analysis-card.grade-b { border-left: 3px solid var(--grade-b); }
+.analysis-card.grade-c { border-left: 3px solid var(--grade-c); }
+.analysis-card.grade-d { border-left: 3px solid var(--grade-d); }
+
+.header-check-ok { color: var(--grade-a); font-weight: 600; }
+.header-check-fail { color: var(--grade-d); font-weight: 600; }
+
+/* ============================================
+   SEARCH ANALYSIS PANELS (contradictions/consensus/trust/insights)
+   ============================================ */
+.analysis-item-row {
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--border);
+}
+.analysis-item-row:last-child { border-bottom: none; }
+
+.analysis-item-label {
+  font-size: var(--space-2);
+  font-weight: 600;
+  color: var(--ink-muted);
+  margin-bottom: var(--space-1);
+}
+
+.analysis-item-text {
+  font-size: var(--space-3);
+  line-height: 1.5;
+}
+
+.consensus-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.consensus-bar-track {
+  flex: 1;
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.consensus-bar-fill {
+  height: 100%;
+  background: var(--border-strong);
+}
+
+.consensus-pct {
+  font-size: var(--space-3);
+  font-weight: 700;
+  color: var(--ink-muted);
+}
+
+.consensus-sources {
+  font-size: var(--space-2);
+  color: var(--ink-muted);
+}
+
+.trust-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.trust-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.trust-source {
+  font-size: var(--space-3);
+  font-weight: 500;
+}
+
+.trust-signals {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.trust-signal {
+  font-size: var(--space-2);
+  padding: 2px var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--ink-muted);
+}
+
+.insight-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.insight-item {
+  font-size: var(--space-3);
+  line-height: 1.5;
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--border);
+}
+
+/* ============================================
+   RESULT PAGE (page metrics / headings / links / images)
+   ============================================ */
+.result-page-header {
+  margin-bottom: var(--space-8);
+}
+
+.result-page-title {
+  margin-bottom: var(--space-2);
+  font-weight: 600;
+  font-size: 1.15rem;
+}
+
+.result-page-url {
+  font-size: 0.9rem;
+  color: var(--ink-muted);
+  word-break: break-all;
+  margin-bottom: var(--space-3);
+  font-family: var(--font-mono);
+  font-weight: 400;
+}
+
+.result-page-desc {
+  color: var(--ink-muted);
+  line-height: 1.7;
+  margin-bottom: var(--space-6);
+  font-size: 0.95rem;
+}
+
+.summary-line-text {
+  color: var(--ink-muted);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  margin-bottom: var(--space-4);
+}
+
+.metric-error {
+  font-family: var(--font-mono);
+  color: var(--ink-muted);
+}
+
+.metric-response-unit {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.metric-response-note {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--ink-muted);
+  margin-top: 6px;
+}
+
+.result-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.result-heading-item {
+  font-size: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.result-linklist {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.result-linklist-item {
+  font-size: var(--space-3);
+  color: var(--ink-muted);
+  word-break: break-all;
+  text-decoration: none;
+}

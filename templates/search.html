@@ -1,63 +1,163 @@
 {% extends "base.html" %}
 {% block title %}Search — {{ s.query }}{% endblock %}
+
 {% block content %}
+
 <div style="margin-bottom: var(--space-8);">
   <a href="{{ url_for('index') }}" class="back-link">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+    <svg width="16" height="16" viewBox="0 0 24 24"
+         fill="none" stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round">
+      <line x1="19" y1="12" x2="5" y2="12"></line>
+      <polyline points="12 19 5 12 12 5"></polyline>
+    </svg>
     New search
   </a>
-  <h1 style="font-size: clamp(1.5rem, 4vw, 2.5rem); font-weight: 700; letter-spacing: -0.02em; margin-bottom: var(--space-3);">{{ s.query }}</h1>
-  <div style="display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap;">
-    <span style="color: var(--ink-muted); font-size: var(--space-3);">{{ s.result_count }} results in {{ s.response_ms }} ms</span>
-    <span style="color: var(--ink-muted);">·</span>
-    <a href="{{ url_for('export_search', search_id=s.id, fmt='json') }}" style="color: var(--accent); text-decoration: none; font-size: var(--space-3); font-weight: 500;">Export JSON</a>
-    <span style="color: var(--ink-muted);">·</span>
-    <a href="{{ url_for('export_search', search_id=s.id, fmt='csv') }}" style="color: var(--accent); text-decoration: none; font-size: var(--space-3); font-weight: 500;">Export CSV</a>
+
+  <h1 style="
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: var(--space-3);
+  ">
+    {{ s.query }}
+  </h1>
+
+  <div style="
+      display:flex;
+      align-items:center;
+      gap:var(--space-4);
+      flex-wrap:wrap;
+  ">
+    <span class="result-type">
+      {{ s.intent | upper }}
+    </span>
+
+    {% if s.response_ms %}
+    <span style="
+        color:var(--ink-muted);
+        font-size:var(--space-3);
+    ">
+      {{ s.response_ms }} ms
+    </span>
+    {% endif %}
+
+    <span style="color:var(--ink-muted);">·</span>
+
+    <a
+      href="{{ url_for('export_search', search_id=s.id, fmt='json') }}"
+      style="
+        color:var(--accent);
+        text-decoration:none;
+        font-size:var(--space-3);
+        font-weight:500;
+      "
+    >
+      Export JSON
+    </a>
+
+    <span style="color:var(--ink-muted);">·</span>
+
+    <a
+      href="{{ url_for('export_search', search_id=s.id, fmt='csv') }}"
+      style="
+        color:var(--accent);
+        text-decoration:none;
+        font-size:var(--space-3);
+        font-weight:500;
+      "
+    >
+      Export CSV
+    </a>
   </div>
 </div>
 
-{% if s.analysis %}
+{% if s.analysis.fallback_label %}
+<div
+  class="analysis-card"
+  style="
+    margin-bottom:var(--space-6);
+    border-left:3px solid var(--border-strong);
+  "
+>
+  <div style="
+      font-size:var(--space-3);
+      font-family:var(--font-mono);
+  ">
+    {{ s.analysis.fallback_label }}
+  </div>
+</div>
+{% endif %}
+
+
+{# ==========================================================
+   Analysis panels
+   Backend already enforces >= 3 sources.
+   Individual modules must also have > 1 meaningful datapoint.
+   ========================================================== #}
+
+{% if s.analysis.show_analysis %}
 <div class="analysis-grid">
-  {% if s.analysis.contradictions %}
-  <div class="analysis-card" style="border-left: 3px solid var(--border-strong);">
+
+  {% if s.analysis.contradictions | length > 1 %}
+  <div
+    class="analysis-card"
+    style="border-left:3px solid var(--border-strong);"
+  >
     <div class="analysis-card-title">Contradictions</div>
+
     <div class="analysis-card-content">
       {% for c in s.analysis.contradictions %}
-      <div style="padding: var(--space-3) 0; border-bottom: 1px solid var(--border);">
-        <div style="font-size: var(--space-2); font-weight: 600; color: var(--ink-muted); margin-bottom: var(--space-1);">{{ c.source_a }}</div>
-        <div style="font-size: var(--space-3); line-height: 1.5;">{{ c.snippet_a[:100] }}...</div>
+      <div class="analysis-item-row">
+        <div class="analysis-item-label">{{ c.source_a }} / {{ c.source_b }}</div>
+        <div class="analysis-item-text">{{ c.snippet_a[:140] }}</div>
       </div>
       {% endfor %}
     </div>
   </div>
   {% endif %}
 
-  {% if s.analysis.consensus %}
-  <div class="analysis-card" style="border-left: 3px solid var(--border-strong);">
+
+  {% if
+      s.analysis.consensus
+      and s.analysis.consensus.total_sources >= 3
+  %}
+  <div
+    class="analysis-card"
+    style="border-left:3px solid var(--border-strong);"
+  >
     <div class="analysis-card-title">Consensus</div>
+
     <div class="analysis-card-content">
-      <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3);">
-        <div style="flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden;">
-          <div style="width: {{ s.analysis.consensus.agreement_pct }}%; height: 100%; background: #22C55E; border-radius: 4px; transition: width var(--duration) var(--ease);"></div>
+
+      <div class="consensus-row">
+        <div class="consensus-bar-track">
+          <div class="consensus-bar-fill" style="width:{{ s.analysis.consensus.agreement_pct }}%;"></div>
         </div>
-        <span style="font-size: var(--space-3); font-weight: 700; color: var(--ink-muted);">{{ s.analysis.consensus.agreement_pct }}%</span>
+        <span class="consensus-pct">{{ s.analysis.consensus.agreement_pct }}%</span>
       </div>
-      <p style="font-size: var(--space-2); color: var(--ink-muted);">{{ s.analysis.consensus.total_sources }} sources analyzed</p>
+      <p class="consensus-sources">{{ s.analysis.consensus.total_sources }} independent sources</p>
+
     </div>
   </div>
   {% endif %}
 
-  {% if s.analysis.bias %}
-  <div class="analysis-card" style="border-left: 3px solid var(--border-strong);">
+
+  {% if s.analysis.bias | length > 1 %}
+  <div
+    class="analysis-card"
+    style="border-left:3px solid var(--border-strong);"
+  >
     <div class="analysis-card-title">Source Trust</div>
+
     <div class="analysis-card-content">
-      <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+      <div class="trust-list">
         {% for b in s.analysis.bias[:5] %}
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-          <span style="font-size: var(--space-3); font-weight: 500;">{{ b.source }}</span>
-          <div style="display: flex; gap: var(--space-1);">
+        <div class="trust-row">
+          <span class="trust-source">{{ b.source }}</span>
+          <div class="trust-signals">
             {% for sig in b.signals[:2] %}
-            <span style="font-size: var(--space-2); padding: 2px var(--space-2); border-radius: var(--radius); background: var(--bg); color: var(--ink-muted);">{{ sig }}</span>
+            <span class="trust-signal">{{ sig }}</span>
             {% endfor %}
           </div>
         </div>
@@ -67,173 +167,164 @@
   </div>
   {% endif %}
 
-  {% if s.analysis.overlooked %}
-  <div class="analysis-card" style="border-left: 3px solid var(--border-strong);">
+
+  {% if s.analysis.overlooked | length > 1 %}
+  <div
+    class="analysis-card"
+    style="border-left:3px solid var(--border-strong);"
+  >
     <div class="analysis-card-title">Key Insights</div>
+
     <div class="analysis-card-content">
-      <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--space-2);">
-        {% for fact in s.analysis.overlooked[:3] %}
-        <li style="font-size: var(--space-3); line-height: 1.5; padding-left: var(--space-3); border-left: 2px solid var(--border);">{{ fact.fact[:120] }}...</li>
+      <ul class="insight-list">
+        {% for fact in s.analysis.overlooked[:4] %}
+        <li class="insight-item">{{ fact.fact }}</li>
         {% endfor %}
       </ul>
     </div>
   </div>
   {% endif %}
+
 </div>
 {% endif %}
 
-{% if s.analysis.answer_card %}
-<div class="card" style="margin-bottom: var(--space-8);">
-  <h3 class="card-title">{{ s.analysis.answer_card.title }}</h3>
-  <p class="card-description">{{ s.analysis.answer_card.summary }}</p>
-  <div class="dashboard-grid" style="margin-bottom: var(--space-6);">
-    {% for attr in s.analysis.answer_card.attributes %}
-    <div class="card" style="text-align: center; padding: var(--space-4);">
-      <div style="font-size: 1.5rem; margin-bottom: var(--space-2);">{{ attr.icon }}</div>
-      <div style="font-size: var(--space-2); color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: var(--space-1);">{{ attr.label }}</div>
-      <div style="font-size: var(--space-4); font-weight: 700;">{{ attr.value }}</div>
-    </div>
-    {% endfor %}
-  </div>
-  {% if s.analysis.follow_ups %}
-  <div>
-    <div class="section-label" style="margin-bottom: var(--space-3);">Related</div>
-    <div class="chip-list" style="justify-content: flex-start;">
-      {% for fu in s.analysis.follow_ups %}
-      <a href="{{ url_for('go') }}" class="chip" data-query="{{ fu }}">{{ fu }}</a>
-      {% endfor %}
-    </div>
-  </div>
-  {% endif %}
-</div>
-{% endif %}
 
-{% if s.analysis.step_by_steps %}
-{% set howto = s.analysis.how_to_summary %}
-<div class="analysis-card" style="margin-bottom: var(--space-8); border-left: 3px solid var(--border-strong);">
-  <div class="analysis-card-title">Step-by-Step Guide</div>
-  {% if howto %}
-  <div style="padding: var(--space-3) 0; border-bottom: 1px solid var(--border); margin-bottom: var(--space-4);">
-    <p style="font-size: var(--space-3); color: var(--ink-muted); margin: 0 0 var(--space-3) 0;">{{ howto.summary }}</p>
-    {% if howto.prerequisites %}
-    <div style="margin-bottom: var(--space-3);">
-      <span style="font-size: var(--space-2); font-weight: 600; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.05em;">Prerequisites</span>
-      <ul style="margin: var(--space-2) 0 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--space-1);">
-        {% for prereq in howto.prerequisites %}
-        <li style="font-size: var(--space-3); color: var(--ink-muted); padding-left: var(--space-4); position: relative;">
-          <span style="position: absolute; left: 0; color: var(--accent);">▸</span>{{ prereq }}
-        </li>
-        {% endfor %}
-      </ul>
+{# ==========================================================
+   Results
+   No raw source counts.
+   No grouping count labels.
+   ========================================================== #}
+
+{% if s.results %}
+
+<div class="results-container">
+
+  {% for item in s.results %}
+  <article class="result-card">
+
+    <div class="result-header">
+      {% if item.source %}
+      <span class="result-source">
+        {{ item.source }}
+      </span>
+      {% endif %}
+
+      {% if item.type %}
+      <span class="result-type">
+        {{ item.type }}
+      </span>
+      {% endif %}
+    </div>
+
+    {% if item.url %}
+    <a
+      href="{{ item.url }}"
+      target="_blank"
+      rel="noopener"
+      class="result-title"
+    >
+      {{ item.title }}
+    </a>
+
+    <p class="result-url">
+      {{ item.url }}
+    </p>
+    {% else %}
+    <div class="result-title">
+      {{ item.title }}
     </div>
     {% endif %}
-    <div style="display: flex; gap: var(--space-4); flex-wrap: wrap;">
-      <span style="font-size: var(--space-2); padding: 2px var(--space-2); border-radius: var(--radius); background: var(--bg); color: var(--ink-muted);">{{ howto.total_steps }} steps</span>
-      <span style="font-size: var(--space-2); padding: 2px var(--space-2); border-radius: var(--radius); background: var(--bg); color: var(--ink-muted);">{{ howto.total_estimated_minutes }} min est.</span>
-      <span style="font-size: var(--space-2); padding: 2px var(--space-2); border-radius: var(--radius); background: var(--bg); color: var(--ink-muted);">{{ howto.difficulty }}</span>
+
+    {% if item.snippet %}
+    <p class="result-snippet">
+      {{ item.snippet }}
+    </p>
+    {% endif %}
+
+    {% if item.meta %}
+    <p class="result-meta">
+      {{ item.meta }}
+    </p>
+    {% endif %}
+
+    <div class="result-actions">
+
+      {% if item.url %}
+      <form
+        action="{{ url_for('go') }}"
+        method="post"
+      >
+        <input
+          type="hidden"
+          name="query"
+          value="{{ item.url }}"
+        >
+
+        <input
+          type="hidden"
+          name="mode"
+          value="auto"
+        >
+
+        <button
+          type="submit"
+          class="btn btn-secondary btn-sm"
+        >
+          Analyze
+        </button>
+      </form>
+      {% endif %}
+
+      <form
+        action="{{ url_for('save_item') }}"
+        method="post"
+      >
+        <input
+          type="hidden"
+          name="query"
+          value="{{ s.query }}"
+        >
+
+        <input
+          type="hidden"
+          name="item_json"
+          value="{{ item | tojson | e }}"
+        >
+
+        <button
+          type="submit"
+          class="btn btn-secondary btn-sm"
+        >
+          Save
+        </button>
+      </form>
+
     </div>
-  </div>
-  {% endif %}
-  <div style="display: flex; flex-direction: column; gap: var(--space-4);">
-    {% for step in s.analysis.step_by_steps %}
-    <div style="border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-4); background: var(--bg);">
-      <div style="display: flex; align-items: flex-start; gap: var(--space-3);">
-        <div style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-size: var(--space-3); font-weight: 700;">{{ step.step_number }}</div>
-        <div style="flex: 1; min-width: 0;">
-          <div style="font-size: var(--space-3); font-weight: 600; margin-bottom: var(--space-1);">{{ step.step_title }}</div>
-          <p style="font-size: var(--space-3); color: var(--ink-muted); line-height: 1.6; margin: 0 0 var(--space-3) 0;">{{ step.step_description }}</p>
-          <div style="display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: center;">
-            {% if step.step_verb %}
-            <span style="font-size: var(--space-2); padding: 2px var(--space-2); border-radius: var(--radius); background: var(--accent); color: white; text-transform: uppercase; letter-spacing: 0.03em;">{{ step.step_verb }}</span>
-            {% endif %}
-            <span style="font-size: var(--space-2); color: var(--ink-muted);">⏱ ~{{ step.estimated_minutes }} min</span>
-            {% if step.difficulty %}
-            <span style="font-size: var(--space-2); padding: 2px var(--space-2); border-radius: var(--radius); background: var(--bg); color: var(--ink-muted);">{{ step.difficulty }}</span>
-            {% endif %}
-            {% if step.url %}
-            <a href="{{ step.url }}" target="_blank" rel="noopener" style="font-size: var(--space-2); color: var(--accent); text-decoration: none;">Source →</a>
-            {% endif %}
-          </div>
-          {% if step.tips %}
-          <div style="margin-top: var(--space-2); padding: var(--space-2) var(--space-3); border-radius: var(--radius); background: var(--surface); border-left: 2px solid var(--accent);">
-            <span style="font-size: var(--space-2); color: var(--ink-muted); font-weight: 600;">💡 Tip:</span>
-            <span style="font-size: var(--space-3); color: var(--ink-muted);">{{ step.tips[0] }}</span>
-          </div>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-    {% endfor %}
-  </div>
+
+  </article>
+  {% endfor %}
+
 </div>
+
+{% else %}
+
+<div
+  class="analysis-card"
+  style="border-left:3px solid var(--border-strong);"
+>
+  <div class="analysis-card-title">
+    No matching results
+  </div>
+
+  <p style="
+      margin:0;
+      color:var(--ink-muted);
+      font-size:var(--space-3);
+  ">
+    No results passed the source and relevance rules for this intent.
+  </p>
+</div>
+
 {% endif %}
 
-{% if s.group_order %}
-  {% for src in s.group_order %}
-  <div style="margin-bottom: var(--space-10);">
-    <h2 class="section-title" style="font-size: var(--space-4); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-muted); margin-bottom: var(--space-4);">
-      {{ src }} <span style="font-weight: 400; color: var(--ink-muted);">({{ s.grouped[src] | length }})</span>
-    </h2>
-    <div class="results-container">
-      {% for item in s.grouped[src] %}
-      <article class="result-card">
-        <div class="result-header">
-          {% if item.source %}
-          <span class="result-source">{{ item.source }}</span>
-          {% endif %}
-          {% if item.type %}
-          <span class="result-type">{{ item.type }}</span>
-          {% endif %}
-        </div>
-        <a href="{{ item.url }}" target="_blank" rel="noopener" class="result-title">{{ item.title }}</a>
-        <p class="result-url">{{ item.url }}</p>
-        {% if item.snippet %}<p class="result-snippet">{{ item.snippet }}</p>{% endif %}
-        {% if item.meta %}<p class="result-meta">{{ item.meta }}</p>{% endif %}
-        <div class="result-actions">
-          <form action="{{ url_for('go') }}" method="post">
-            <input type="hidden" name="query" value="{{ item.url }}">
-            <button type="submit" class="btn btn-secondary btn-sm">Scrape</button>
-          </form>
-          <form action="{{ url_for('save_item') }}" method="post">
-            <input type="hidden" name="query" value="{{ s.query }}">
-            <input type="hidden" name="item_json" value="{{ item | tojson | e }}">
-            <button type="submit" class="btn btn-secondary btn-sm">Save</button>
-          </form>
-        </div>
-      </article>
-      {% endfor %}
-    </div>
-  </div>
-  {% endfor %}
-{% else %}
-  <div class="results-container">
-    {% for item in s.results %}
-    <article class="result-card">
-      <div class="result-header">
-        {% if item.source %}
-        <span class="result-source">{{ item.source }}</span>
-        {% endif %}
-        {% if item.type %}
-        <span class="result-type">{{ item.type }}</span>
-        {% endif %}
-      </div>
-      <a href="{{ item.url }}" target="_blank" rel="noopener" class="result-title">{{ item.title }}</a>
-      <p class="result-url">{{ item.url }}</p>
-      {% if item.snippet %}<p class="result-snippet">{{ item.snippet }}</p>{% endif %}
-      {% if item.meta %}<p class="result-meta">{{ item.meta }}</p>{% endif %}
-      <div class="result-actions">
-        <form action="{{ url_for('go') }}" method="post">
-          <input type="hidden" name="query" value="{{ item.url }}">
-          <button type="submit" class="btn btn-secondary btn-sm">Scrape</button>
-        </form>
-        <form action="{{ url_for('save_item') }}" method="post">
-          <input type="hidden" name="query" value="{{ s.query }}">
-          <input type="hidden" name="item_json" value="{{ item | tojson | e }}">
-          <button type="submit" class="btn btn-secondary btn-sm">Save</button>
-        </form>
-      </div>
-    </article>
-    {% endfor %}
-  </div>
-{% endif %}
 {% endblock %}

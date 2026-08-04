@@ -1,96 +1,430 @@
 {% extends "base.html" %}
 {% block title %}KitPocket{% endblock %}
+
 {% block content %}
-<section class="hero" role="region" aria-label="Hero" style="position: relative;">
-  <!-- corner bracket marks -->
-  <svg class="corner-bracket top-left" width="24" height="24" aria-hidden="true"><path d="M4 12 L4 4 L12 4" stroke="var(--border)" stroke-width="1" fill="none" stroke-linecap="square"/></svg>
-  <svg class="corner-bracket top-right" width="24" height="24" aria-hidden="true"><path d="M20 12 L20 4 L12 4" stroke="var(--border)" stroke-width="1" fill="none" stroke-linecap="square" transform="translate(0,0)"/></svg>
-  <svg class="corner-bracket bottom-left" width="24" height="24" aria-hidden="true"><path d="M4 12 L4 20 L12 20" stroke="var(--border)" stroke-width="1" fill="none" stroke-linecap="square" transform="translate(0,0)"/></svg>
-  <svg class="corner-bracket bottom-right" width="24" height="24" aria-hidden="true"><path d="M20 12 L20 20 L12 20" stroke="var(--border)" stroke-width="1" fill="none" stroke-linecap="square" transform="translate(0,0)"/></svg>
+<style>
+  /* PASS homepage only */
+  body {
+    overflow: hidden;
+  }
 
-  <div class="hero-badge" aria-hidden="true">
-    <div class="logo-splash" aria-hidden="true">{% from '_logo_macro.html' import logo %}{{ logo(36, 'brand-logo') }}</div>
-  </div>
-  <h1 class="hero-title">Scrape. Search.<br>Discover.</h1>
-  <p class="hero-subtitle">Paste a URL to pull it live, or type a plain query to search across the web and open knowledge sources.</p>
+  .footer {
+    display: none !important;
+  }
 
-  <div class="search-box-wrapper">
-    <form action="{{ url_for('go') }}" method="post" class="search-box" id="heroSearchForm">
-      <div class="search-box-icon">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+  main {
+    min-height: 0 !important;
+  }
+
+  .pass-home {
+    height: calc(100vh - 116px);
+    min-height: 420px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: clamp(48px, 8vh, 96px);
+    box-sizing: border-box;
+  }
+
+  .pass-shell {
+    width: min(640px, calc(100vw - 40px));
+  }
+
+  .pass-logo {
+    height: 28px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .pass-logo svg {
+    width: 24px;
+    height: 24px;
+    color: var(--ink-muted);
+  }
+
+  .pass-logo-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-muted);
+  }
+
+  .pass-mode-hint {
+    margin-top: 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+    min-height: 16px;
+  }
+
+  .pass-search {
+    position: relative;
+    width: 100%;
+  }
+
+  .pass-search .search-box {
+    width: 100%;
+    min-height: 48px;
+    margin: 0;
+  }
+
+  .pass-search .search-box-input {
+    min-height: 48px;
+  }
+
+  .pass-tools-button {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    border: 0;
+    border-left: 1px solid var(--border);
+    background: transparent;
+    color: var(--ink-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .pass-tools-button:hover,
+  .pass-tools-button[aria-expanded="true"] {
+    color: var(--ink);
+    background: var(--surface);
+  }
+
+  .pass-modes {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .pass-mode {
+    position: relative;
+  }
+
+  .pass-mode input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .pass-mode span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--ink-muted);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .pass-mode input:checked + span {
+    color: var(--ink);
+    border-color: var(--border-strong);
+    background: var(--surface);
+  }
+
+  .pass-popover {
+    position: absolute;
+    z-index: 30;
+    right: 0;
+    top: calc(100% + 8px);
+    width: min(390px, calc(100vw - 40px));
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow-md, 0 12px 30px rgba(0,0,0,.14));
+  }
+
+  .pass-popover[hidden] {
+    display: none;
+  }
+
+  .pass-popover-title {
+    margin-bottom: 10px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--ink-muted);
+  }
+
+  .pass-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .pass-tool {
+    min-width: 0;
+    padding: 7px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--ink-muted);
+    background: var(--bg);
+  }
+
+  @media (max-width: 700px) {
+    .pass-home {
+      height: calc(100vh - 92px);
+      padding-top: 64px;
+    }
+
+    .pass-tools-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<section class="pass-home" aria-label="Search">
+  <div class="pass-shell">
+
+    <div class="pass-logo">
+      {% from '_logo_macro.html' import logo %}
+      {{ logo(24, 'brand-logo') }}
+      <span class="pass-logo-label">KitPocket Recon</span>
+    </div>
+
+    <form
+      action="{{ url_for('go') }}"
+      method="post"
+      id="heroSearchForm"
+      autocomplete="off"
+    >
+      <div class="pass-search">
+
+        <div class="search-box">
+          <div class="search-box-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </div>
+
+          <input
+            type="text"
+            name="query"
+            id="heroSearchInput"
+            class="search-box-input"
+            placeholder="Search"
+            aria-label="Search query"
+            autofocus
+            required
+          >
+
+          <button
+            type="button"
+            id="advancedToolsButton"
+            class="pass-tools-button"
+            aria-label="Advanced tools"
+            aria-haspopup="true"
+            aria-expanded="false"
+            title="Advanced tools"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="1.7"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <line x1="4" y1="6" x2="20" y2="6"/>
+              <circle cx="9" cy="6" r="2"/>
+              <line x1="4" y1="12" x2="20" y2="12"/>
+              <circle cx="15" cy="12" r="2"/>
+              <line x1="4" y1="18" x2="20" y2="18"/>
+              <circle cx="11" cy="18" r="2"/>
+            </svg>
+          </button>
+
+          <button type="submit" class="search-box-button">
+            Search
+          </button>
+        </div>
+
+        <div
+          id="advancedToolsPopover"
+          class="pass-popover"
+          role="dialog"
+          aria-label="Advanced domain tools"
+          hidden
+        >
+          <div class="pass-popover-title">Advanced tools</div>
+
+          <div class="pass-tools-grid">
+            {% for tool in [
+              'WHOIS',
+              'DNS',
+              'TLS',
+              'CT LOGS',
+              'ASN',
+              'HEADERS',
+              'ROBOTS',
+              'SITEMAP',
+              'MX',
+              'SPF',
+              'DMARC',
+              'SUBDOMAINS',
+              'REVERSE DNS',
+              'FINGERPRINT',
+              'WAYBACK',
+              'COOKIES'
+            ] %}
+              <div class="pass-tool">{{ tool }}</div>
+            {% endfor %}
+          </div>
+        </div>
       </div>
-      <input type="text" name="query" class="search-box-input" placeholder="Search websites, domains, technologies..." autofocus required aria-label="Search query" id="heroSearchInput">
-      <span class="search-box-hint">Ctrl K</span>
-      <button type="submit" class="search-box-button">
-        Analyze
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-      </button>
+
+      <div
+        class="pass-modes"
+        role="radiogroup"
+        aria-label="Search mode"
+      >
+        {% for value in ['auto', 'domain', 'person', 'code'] %}
+        <label class="pass-mode">
+          <input
+            type="radio"
+            name="mode"
+            value="{{ value }}"
+            {% if value == 'auto' %}checked{% endif %}
+          >
+          <span>{{ value }}</span>
+        </label>
+        {% endfor %}
+      </div>
+      <div class="pass-mode-hint" id="modeHint" aria-live="polite"></div>
     </form>
   </div>
-
-  {% if recommendations %}
-  <div style="margin-bottom: var(--space-10);">
-    <div class="chip-label">Popular</div>
-    <div class="chip-list">
-      {% for rec in recommendations %}
-      <button class="chip" onclick="submitSearch('{{ rec.query }}')">{{ rec.title }}</button>
-      {% endfor %}
-    </div>
-  </div>
-  {% endif %}
-
-  {% if recent_queries %}
-  <div style="margin-bottom: var(--space-10);">
-    <div class="chip-label">Recent</div>
-    <div class="chip-list">
-      {% for q in recent_queries %}
-      <button class="chip" onclick="submitSearch('{{ q }}')">{{ q }}</button>
-      {% endfor %}
-    </div>
-  </div>
-  {% endif %}
 </section>
 
-<!-- Tick ruler divider -->
-<svg class="tick-ruler" viewBox="0 0 100 4" preserveAspectRatio="none" aria-hidden="true">
-  <defs>
-    <pattern id="ticks" width="8" height="4" patternUnits="userSpaceOnUse">
-      <rect x="0" y="0" width="1" height="4" fill="var(--border)"></rect>
-    </pattern>
-  </defs>
-  <rect x="0" y="1.5" width="100%" height="1" fill="var(--border)"></rect>
-  <rect x="0" y="0" width="100%" height="4" fill="url(#ticks)" opacity="0.12"></rect>
-</svg>
+<script>
+(function () {
+  const MODE_KEY = 'kitpocket-search-mode';
 
-<section class="recon-card fade-in" style="animation-delay: 0.1s;">
-  <h2 class="card-title">Deep Recon</h2>
-  <p class="card-description">Passive reconnaissance from public sources. No active scanning, no probes — just public data.</p>
+  const MODE_INFO = {
+    auto:   { placeholder: 'Search',                 hint: 'Auto-detects domain, person, or code query' },
+    domain: { placeholder: 'example.com',             hint: 'Runs WHOIS, DNS, TLS, and header recon' },
+    person: { placeholder: 'Name or handle',           hint: 'Correlates OSINT sources for a person or alias' },
+    code:   { placeholder: 'Repo, package, or snippet', hint: 'Searches code hosts and package registries' }
+  };
 
-  <div class="recon-capabilities">
-    <span class="recon-capability">WHOIS</span>
-    <span class="recon-capability">DNS</span>
-    <span class="recon-capability">TLS</span>
-    <span class="recon-capability">CT Logs</span>
-    <span class="recon-capability">ASN</span>
-    <span class="recon-capability">Headers</span>
-    <span class="recon-capability">Robots</span>
-    <span class="recon-capability">Sitemap</span>
-    <span class="recon-capability">MX</span>
-    <span class="recon-capability">SPF</span>
-    <span class="recon-capability">DMARC</span>
-    <span class="recon-capability">Subdomains</span>
-    <span class="recon-capability">Reverse DNS</span>
-    <span class="recon-capability">Fingerprint</span>
-    <span class="recon-capability">Wayback</span>
-    <span class="recon-capability">Cookies</span>
-  </div>
+  function applyModeInfo(mode) {
+    const info = MODE_INFO[mode] || MODE_INFO.auto;
+    const inputEl = document.getElementById('heroSearchInput');
+    const hintEl = document.getElementById('modeHint');
+    if (inputEl) inputEl.placeholder = info.placeholder;
+    if (hintEl) hintEl.textContent = info.hint;
+  }
 
-  <form action="{{ url_for('recon') }}" method="post" class="recon-form">
-    <input type="text" name="target" class="recon-input" placeholder="example.com" required aria-label="Target domain">
-    <button type="submit" class="recon-button">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="22" y1="12" x2="18" y2="12"></line><line x1="6" y1="12" x2="2" y2="12"></line><line x1="12" y1="6" x2="12" y2="2"></line><line x1="12" y1="22" x2="12" y2="18"></line></svg>
-      Run Recon
-    </button>
-  </form>
-</section>
+  const form = document.getElementById('heroSearchForm');
+  const input = document.getElementById('heroSearchInput');
+  const modes = Array.from(
+    document.querySelectorAll('input[name="mode"]')
+  );
+
+  const button = document.getElementById('advancedToolsButton');
+  const popover = document.getElementById('advancedToolsPopover');
+
+  try {
+    const saved = localStorage.getItem(MODE_KEY);
+
+    if (['auto', 'domain', 'person', 'code'].includes(saved)) {
+      const radio = modes.find(r => r.value === saved);
+      if (radio) radio.checked = true;
+    }
+  } catch (_) {}
+
+  modes.forEach(radio => {
+    radio.addEventListener('change', () => {
+      if (!radio.checked) return;
+
+      try {
+        localStorage.setItem(MODE_KEY, radio.value);
+      } catch (_) {}
+
+      applyModeInfo(radio.value);
+    });
+  });
+
+  applyModeInfo((modes.find(r => r.checked) || {}).value || 'auto');
+
+  function closeTools() {
+    popover.hidden = true;
+    button.setAttribute('aria-expanded', 'false');
+  }
+
+  button.addEventListener('click', event => {
+    event.stopPropagation();
+
+    const opening = popover.hidden;
+
+    popover.hidden = !opening;
+    button.setAttribute(
+      'aria-expanded',
+      opening ? 'true' : 'false'
+    );
+  });
+
+  popover.addEventListener('click', event => {
+    event.stopPropagation();
+  });
+
+  document.addEventListener('click', closeTools);
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      closeTools();
+    }
+
+    if (
+      (event.ctrlKey || event.metaKey) &&
+      event.key.toLowerCase() === 'k'
+    ) {
+      event.preventDefault();
+      input.focus();
+    }
+  });
+
+  window.addEventListener('load', () => {
+    input.focus();
+  });
+
+  form.addEventListener('submit', () => {
+    const selected = modes.find(r => r.checked);
+
+    if (selected) {
+      try {
+        localStorage.setItem(MODE_KEY, selected.value);
+      } catch (_) {}
+    }
+
+    const submitBtn = form.querySelector('.search-box-button');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Searching...';
+    }
+    if (input) {
+      input.disabled = true;
+    }
+  });
+})();
+</script>
 {% endblock %}

@@ -199,7 +199,7 @@
   <div class="settings-overlay" id="settingsOverlay" onclick="toggleSettings()"></div>
 
   <!-- Settings panel -->
-  <aside class="settings-panel" id="settingsPanel" aria-label="Settings">
+  <aside class="settings-panel" id="settingsPanel" aria-label="Settings" aria-hidden="true">
     <div class="settings-header">
       <h2 class="settings-title">Settings</h2>
       <button class="settings-close" onclick="toggleSettings()" aria-label="Close settings">
@@ -326,10 +326,40 @@
   </aside>
 
   <script>
-    function toggleSettings() {
-      document.getElementById('settingsPanel').classList.toggle('open');
-      document.getElementById('settingsOverlay').classList.toggle('open');
+    function toggleSettings(forceState) {
+      const panel = document.getElementById('settingsPanel');
+      const overlay = document.getElementById('settingsOverlay');
+
+      if (!panel || !overlay) return;
+
+      const shouldOpen =
+        typeof forceState === 'boolean'
+          ? forceState
+          : !panel.classList.contains('open');
+
+      panel.classList.toggle('open', shouldOpen);
+      overlay.classList.toggle('open', shouldOpen);
+
+      panel.setAttribute(
+        'aria-hidden',
+        shouldOpen ? 'false' : 'true'
+      );
+
+      document.body.classList.toggle(
+        'settings-open',
+        shouldOpen
+      );
     }
+
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        const panel = document.getElementById('settingsPanel');
+
+        if (panel && panel.classList.contains('open')) {
+          toggleSettings(false);
+        }
+      }
+    });
 
     function setTheme(mode) {
       document.documentElement.classList.toggle('dark', mode === 'dark');
