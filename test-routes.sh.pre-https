@@ -1,0 +1,136 @@
+#!/bin/bash
+# pocketSearch — Functional Route Testing
+# Start server, test all routes, verify responses
+
+set -e
+
+PYTHON="./venv/bin/python3"
+PORT="${PORT:-5500}"
+HOST="${HOST:-127.0.0.1}"
+export HOST PORT
+BASE_URL="http://$HOST:$PORT"
+
+echo "🧪 POCKETSEARCH FUNCTIONAL TESTS"
+echo "=================================="
+echo ""
+
+# Start server in background
+echo "→ Starting Flask server..."
+export FLASK_ENV=testing
+export DB_PATH=/tmp/test-pocketsearch.db
+export SECRET_KEY=$(python3 -c 'import secrets; print(secrets.token_hex(32))')
+
+$PYTHON app.py > /tmp/app.log 2>&1 &
+SERVER_PID=$!
+
+# Wait for server startup
+sleep 3
+
+# Function to kill server on exit
+cleanup() {
+  echo ""
+  echo "→ Stopping server..."
+  kill "$SERVER_PID" 2>/dev/null || true
+  wait "$SERVER_PID" 2>/dev/null || true
+  rm -f /tmp/test-pocketsearch.db /tmp/test-pocketsearch.db-* /tmp/app.log
+}
+
+trap cleanup EXIT
+
+# Test if server is running
+if ! kill -0 $SERVER_PID 2>/dev/null; then
+  echo "✗ Server failed to start"
+  cat /tmp/app.log
+  exit 1
+fi
+echo "✓ Server started (PID: $SERVER_PID)"
+echo ""
+
+# Helper function
+test_route() {
+  local method=$1
+  local path=$2
+  local expected=$3
+  local data=$4
+
+  echo -n "  $method $path ... "
+  
+  if [ "$method" = "POST" ]; then
+    response=$(curl -s -X POST "$BASE_URL$path" -d "$data" -w "\n%{http_code}" 2>/dev/null || echo "ERROR")
+  else
+    response=$(curl -s -X GET "$BASE_URL$path" -w "\n%{http_code}" 2>/dev/null || echo "ERROR")
+  fi
+
+  http_code=$(echo "$response" | tail -1)
+  body=$(echo "$response" | head -n -1)
+
+  if [ "$http_code" = "$expected" ]; then
+    echo "✓ (HTTP $http_code)"
+    return 0
+  else
+    echo "✗ (got HTTP $http_code, expected $expected)"
+    echo "    Response: $(echo "$body" | head -c 100)"
+    return 1
+  fi
+}
+
+# Run tests
+echo "→ Testing GET routes..."
+test_route "GET" "/" "200" ""
+test_route "GET" "/privacy" "200" ""
+test_route "GET" "/about" "200" ""
+test_route "GET" "/history" "200" ""
+test_route "GET" "/saved" "200" ""
+test_route "GET" "/workspace" "200" ""
+test_route "GET" "/recon" "200" ""
+echo ""
+
+echo "→ Testing error handling..."
+test_route "GET" "/nonexistent" "404" ""
+test_route "GET" "/result/99999" "404" ""
+echo ""
+
+echo "→ Testing POST routes..."
+test_route "POST" "/go" "302" "query=test&mode=auto"
+test_route "POST" "/theme" "200" "theme=dark"
+echo ""
+
+echo "→ Checking security headers..."
+headers=$(curl -s -I "$BASE_URL/" 2>/dev/null || echo "ERROR")
+if echo "$headers" | grep -q "X-Content-Type-Options"; then
+  echo "  ✓ X-Content-Type-Options header present"
+else
+  echo "  ✗ X-Content-Type-Options header missing"
+fi
+
+if echo "$headers" | grep -q "X-Frame-Options"; then
+  echo "  ✓ X-Frame-Options header present"
+else
+  echo "  ✗ X-Frame-Options header missing"
+fi
+echo ""
+
+echo "→ Checking SSL certificate..."
+if [ -f "cert.pem" ] && [ -f "key.pem" ]; then
+  echo "  ✓ SSL certificates present"
+  openssl x509 -in cert.pem -noout -dates 2>/dev/null || echo "  ✗ Cannot read certificate"
+else
+  echo "  ⓘ No SSL certificates (HTTP mode)"
+fi
+echo ""
+
+echo "=================================="
+echo "✓ FUNCTIONAL TESTS COMPLETED"
+echo ""
+echo "Key routes verified:"
+echo "  • / (homepage)"
+echo "  • /privacy (privacy policy)"
+echo "  • /about (about page)"
+echo "  • /go (search submission)"
+echo "  • /history (search history)"
+echo "  • /saved (saved results)"
+echo "  • /workspace (workspace)"
+echo "  • /recon (recon interface)"
+echo "  • /theme (theme toggle)"
+echo "  • Error handling (404)"
+echo ""

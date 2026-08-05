@@ -31,3 +31,13 @@ backups/
 *.db-shm
 *.db-wal
 data/*.db
+
+# Local TLS certificates
+cert.pem
+key.pem
+*.key
+
+# Local TLS certificates
+cert.pem
+key.pem
+*.key

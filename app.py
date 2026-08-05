@@ -27,6 +27,9 @@ except Exception:
     pass
 
 app = Flask(__name__)
+app.config["ENV"] = os.environ.get("FLASK_ENV", "production")
+app.config["TESTING"] = app.config["ENV"] == "testing"
+
 secret_key = os.environ.get("SECRET_KEY")
 if not secret_key:
     raise RuntimeError(
@@ -34,6 +37,7 @@ if not secret_key:
         "Generate one with: python -c 'import secrets; print(secrets.token_hex(32))'"
     )
 app.secret_key = secret_key
+
 DB_PATH = os.environ.get("DB_PATH", "webscope.db")
 UA = "Mozilla/5.0 (compatible; WebScope/1.0)"
 TIMEOUT = int(os.environ.get("TIMEOUT", "8"))
@@ -48,7 +52,9 @@ if not logger.handlers:
     formatter = logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s")
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-logger.setLevel(logging.INFO)
+log_level = os.environ.get("LOG_LEVEL", "INFO" if not DEBUG else "DEBUG")
+logger.setLevel(getattr(logging, log_level.upper(), logging.INFO))
+logging.getLogger("werkzeug").setLevel(logging.WARNING)
 
 PRIVATE_NETWORKS = [
     ipaddress.ip_network("10.0.0.0/8"),
@@ -118,6 +124,16 @@ def close_db(exc):
     db = g.pop("db", None)
     if db is not None:
         db.close()
+
+
+@app.after_request
+def add_security_headers(response):
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    if not DEBUG:
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
 
 
 def init_db():
@@ -379,6 +395,15 @@ def web_search(query, max_results=15):
 @app.route("/")
 def index():
     return render_template("index.html")
+
+@app.route("/privacy")
+def privacy():
+    try:
+        with open("PRIVACY.md", "r") as f:
+            content = f.read()
+        return render_template("markdown.html", content=content, title="Privacy Policy")
+    except FileNotFoundError:
+        return "Privacy policy not found.", 404
 
 @app.route("/go", methods=["POST"])
 def go():
@@ -849,14 +874,14 @@ def typeahead():
     q = request.args.get("q", "").strip()
     if not q or len(q) < 2:
         return json.dumps({"suggestions": []})
-    
+
     suggestions = []
     suggestions.append(f"{q} definition")
     suggestions.append(f"{q} tutorial")
     suggestions.append(f"{q} pros and cons")
     suggestions.append(f"best {q}")
     suggestions.append(f"{q} vs alternatives")
-    
+
     try:
         data = knowledgelib._get_json("https://en.wikipedia.org/w/api.php", {
             "action": "opensearch",
@@ -870,7 +895,7 @@ def typeahead():
                     suggestions.append(title)
     except Exception:
         pass
-    
+
     return json.dumps({"suggestions": suggestions[:8]})
 
 
@@ -918,6 +943,21 @@ def _cleanup_old_records():
 
 
 if __name__ == "__main__":
-    init_db()
-    _cleanup_old_records()
-    app.run(host=os.environ.get("HOST", "0.0.0.0"), port=int(os.environ.get("PORT", "5000")), debug=DEBUG)
+    try:
+        init_db()
+        logger.info("Database initialized successfully")
+        _cleanup_old_records()
+        host = os.environ.get("HOST", "0.0.0.0")
+        port = int(os.environ.get("PORT", "5000"))
+        logger.info("Starting pocketSearch server on %s:%d (debug=%s)", host, port, DEBUG)
+
+        # SSL/TLS support
+        ssl_context = None
+        if os.path.exists("cert.pem") and os.path.exists("key.pem"):
+            ssl_context = ("cert.pem", "key.pem")
+            logger.info("SSL enabled (self-signed certificate)")
+
+        app.run(host=host, port=port, debug=DEBUG, use_reloader=False, ssl_context=ssl_context)
+    except Exception as e:
+        logger.error("Failed to start application: %s", e)
+        raise

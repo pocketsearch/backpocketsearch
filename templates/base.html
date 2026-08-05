@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" {% if request.endpoint == 'index' %}class="dark"{% endif %}>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,7 +14,7 @@
     (function() {
       try {
         const prefs = JSON.parse(localStorage.getItem('kitpocket-prefs') || '{}');
-        if (prefs.theme === 'dark') document.documentElement.classList.add('dark');
+        if (prefs.theme === 'dark' || window.location.pathname === '/') document.documentElement.classList.add('dark');
         if (prefs.density) document.documentElement.setAttribute('data-density', prefs.density);
         if (prefs.fontSize) document.documentElement.style.fontSize = prefs.fontSize + 'px';
       } catch(e) {}
