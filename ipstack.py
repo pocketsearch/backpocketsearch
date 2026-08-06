@@ -7,7 +7,6 @@ while keeping the implementation optional and failure-tolerant.
 from __future__ import annotations
 
 import ipaddress
-import json
 import logging
 import os
 import time
