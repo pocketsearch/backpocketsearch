@@ -18,6 +18,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_excep
 import recon as reconlib
 import knowledge as knowledgelib
 import ipstack as ipstacklib
+import assistant as assistantlib
 from pass_search import classify_intent, run_search
 from knowledge import record_search, get_recommendations, auto_tag, rank_results, rewrite_query, get_recent_queries
 
@@ -104,3 +105,39 @@ def safe_get(url, **kwargs):
     kwargs.setdefault("timeout", TIMEOUT)
     kwargs.setdefault("stream", True)
     return requests.get(url, **kwargs)
+
+
+# ---------------------------------------------------------------------------
+# Assistant routes
+# ---------------------------------------------------------------------------
+
+@app.route("/assistant", methods=["GET", "POST"])
+def assistant():
+    """Simple chat interface powered by Groq."""
+    enabled = assistantlib.is_enabled()
+    answer = None
+    error = None
+    user_query = ""
+
+    if request.method == "POST":
+        user_query = (request.form.get("query") or "").strip()
+        if not user_query:
+            error = "Please enter a question."
+        elif not enabled:
+            error = "Assistant is not configured. Set GROQ_API_KEY to enable it."
+        else:
+            try:
+                answer = assistantlib.get_response(user_query)
+            except assistantlib.AssistantDisabledError:
+                error = "Assistant is not configured. Set GROQ_API_KEY to enable it."
+            except Exception as exc:  # noqa: BLE001
+                logger.error("Assistant error: %s", exc)
+                error = "Assistant request failed. Please try again later."
+
+    return render_template(
+        "assistant.html",
+        enabled=enabled,
+        answer=answer,
+        error=error,
+        user_query=user_query,
+    )

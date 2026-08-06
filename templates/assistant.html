@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Assistant — KitPocket{% endblock %}
+
+{% block content %}
+<style>
+  .assistant-wrap {
+    max-width: 680px;
+    margin: 60px auto;
+    padding: 0 24px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: #cccccc;
+  }
+  .assistant-header {
+    margin-bottom: 32px;
+  }
+  .assistant-header h1 {
+    font-size: 20px;
+    color: #ffffff;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .assistant-header p {
+    font-size: 12px;
+    color: #666666;
+    margin-top: 6px;
+  }
+  .assistant-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+  .assistant-input {
+    flex: 1;
+    background: transparent;
+    border: 1px solid #333333;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 13px;
+    padding: 10px 14px;
+    border-radius: 4px;
+    outline: none;
+  }
+  .assistant-input:focus { border-color: #666666; }
+  .assistant-submit {
+    background: #ffffff;
+    color: #000000;
+    border: none;
+    padding: 10px 20px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  .assistant-submit:disabled { opacity: 0.5; cursor: default; }
+  .assistant-answer {
+    border: 1px solid #333333;
+    padding: 20px;
+    border-radius: 4px;
+    font-size: 13px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: #dddddd;
+  }
+  .assistant-query-label {
+    font-size: 11px;
+    color: #666666;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .assistant-error {
+    border: 1px solid #552222;
+    background: #1a0000;
+    padding: 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #cc4444;
+  }
+  .assistant-disabled-notice {
+    border: 1px solid #333333;
+    padding: 16px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #666666;
+  }
+</style>
+
+<div class="assistant-wrap">
+  <div class="assistant-header">
+    <h1>⚡ Assistant</h1>
+    <p>Ask anything. Answers are concise and direct.</p>
+  </div>
+
+  {% if not enabled %}
+  <div class="assistant-disabled-notice">
+    Assistant is not configured. Set <code>GROQ_API_KEY</code> in your environment to enable it.
+  </div>
+  {% else %}
+  <form method="post" class="assistant-form" id="assistantForm">
+    <input
+      type="text"
+      name="query"
+      class="assistant-input"
+      placeholder="Ask a question…"
+      value="{{ user_query | e }}"
+      aria-label="Your question"
+      autofocus
+      required
+    >
+    <button type="submit" class="assistant-submit" id="assistantSubmit">Ask</button>
+  </form>
+
+  {% if error %}
+  <div class="assistant-error">{{ error | e }}</div>
+  {% elif answer %}
+  <div class="assistant-query-label">Question: {{ user_query | e }}</div>
+  <div class="assistant-answer">{{ answer | e }}</div>
+  {% endif %}
+
+  <script>
+  (function () {
+    var form = document.getElementById('assistantForm');
+    var btn  = document.getElementById('assistantSubmit');
+    if (form && btn) {
+      form.addEventListener('submit', function () {
+        btn.disabled = true;
+        btn.textContent = 'Thinking…';
+      });
+    }
+  })();
+  </script>
+  {% endif %}
+</div>
+{% endblock %}
