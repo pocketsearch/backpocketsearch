@@ -48,7 +48,11 @@ def get_response(user_text: str) -> str:
     from groq import Groq  # imported lazily so the app runs without groq installed
 
     model = os.environ.get("GROQ_MODEL", _DEFAULT_MODEL).strip() or _DEFAULT_MODEL
-    timeout = int(os.environ.get("GROQ_TIMEOUT", str(_DEFAULT_TIMEOUT)))
+    timeout_raw = os.environ.get("GROQ_TIMEOUT", str(_DEFAULT_TIMEOUT))
+    try:
+        timeout = int(timeout_raw)
+    except (ValueError, TypeError):
+        timeout = _DEFAULT_TIMEOUT
 
     client = Groq(api_key=api_key, timeout=timeout)
     resp = client.chat.completions.create(

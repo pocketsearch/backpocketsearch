@@ -86,12 +86,10 @@ class TestGetResponse(unittest.TestCase):
                 import assistant
                 importlib.reload(assistant)
                 assistant.get_response("hi")
-        _, kwargs = mock_client.chat.completions.create.call_args
-        call_model = kwargs.get("model") or mock_client.chat.completions.create.call_args[0][0] if mock_client.chat.completions.create.call_args[0] else kwargs["model"]
-        # model is passed as keyword argument
-        self.assertEqual(mock_client.chat.completions.create.call_args[1].get("model") or
-                         mock_client.chat.completions.create.call_args.kwargs.get("model"),
-                         custom_model)
+        self.assertEqual(
+            mock_client.chat.completions.create.call_args.kwargs.get("model"),
+            custom_model,
+        )
 
     def test_system_prompt_included(self):
         groq_module, mock_client = self._make_mock_groq("sure")
@@ -115,6 +113,17 @@ class TestGetResponse(unittest.TestCase):
                 importlib.reload(assistant)
                 assistant.get_response("hi")
         groq_module.Groq.assert_called_once_with(api_key="test-key", timeout=15)
+
+    def test_invalid_timeout_falls_back_to_default(self):
+        groq_module, _ = self._make_mock_groq("ok")
+        env = {"GROQ_API_KEY": "test-key", "GROQ_TIMEOUT": "not-a-number"}
+        with patch.dict(os.environ, env, clear=False):
+            with patch.dict(sys.modules, {"groq": groq_module}):
+                import assistant
+                importlib.reload(assistant)
+                assistant.get_response("hi")
+        import assistant as _a
+        groq_module.Groq.assert_called_once_with(api_key="test-key", timeout=_a._DEFAULT_TIMEOUT)
 
 
 # ---------------------------------------------------------------------------
